@@ -1,0 +1,113 @@
+{% extends "base_messages.html" %}
+
+
+{% block title %}verify email{% endblock %}
+
+{% block style %}
+
+    <style>
+        body {
+            background-color: white;
+            color: black; /* Ensure text is visible against the white background */
+            font-family: Arial, sans-serif;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            height: 100vh;
+            margin: 0;
+        }
+        .container {
+            text-align: center;
+            padding: 20px;
+            border: 1px solid black;
+            border-radius: 10px;
+            width: 300px;
+            background-color: white; /* Ensure the container stands out */
+            color: black; /* Set text color inside the container */
+        }
+        button {
+            background-color: black; /* Black background for the button */
+            color: white; /* White text on the button */
+            border: none;
+            padding: 10px 20px;
+            margin: 5px;
+            cursor: pointer;
+            border-radius: 5px;
+            transition: all 0.3s ease; /* Add a hover effect transition */
+        }
+        button:hover {
+            background-color: white; /* Change to white background on hover */
+            color: black; /* Change text to black on hover */
+            border: 1px solid black; /* Add a border for better visibility */
+        }
+        button:disabled {
+            background-color: #555555; /* Gray for disabled buttons */
+            color: white; /* Keep text visible */
+            cursor: not-allowed;
+        }
+    </style>
+
+    {% endblock %}
+    
+{% block body %}
+<body>
+    <div class="container">
+        <h1>Verify OTP</h1>
+        <!-- Verify OTP Form -->
+        <form action="{% url 'verify_email' %}" method="post">
+            {% csrf_token %}
+            <input name="otp" type="text" id="otp" placeholder="Enter OTP"
+                   style="padding: 10px; border-radius: 5px; border: none; width: 80%;" >
+            <br><br>
+            <button type="submit" id="verifyOtp">Verify OTP</button>
+        </form>
+    
+        <!-- Resend OTP Form -->
+        <form id="resendOtpForm" action="{% url 'resend_otp' %}" method="post">
+            {% csrf_token %}
+            <button type="submit" id="resendOtp" disabled>Resend OTP (<span id="timer">30</span>s)</button>
+        </form>
+    </div>
+
+    
+    
+    <script>
+        const resendOtpButton = document.getElementById('resendOtp');
+        const timerSpan = document.getElementById('timer');
+        let timeLeft = 30;
+        let countdownInterval;
+
+        // Start the initial countdown
+        function startCountdown() {
+            timeLeft = 30;
+            resendOtpButton.disabled = true;
+            timerSpan.textContent = timeLeft;
+            countdownInterval = setInterval(() => {
+                if (timeLeft <= 0) {
+                    clearInterval(countdownInterval);
+                    resendOtpButton.disabled = false;
+                    resendOtpButton.textContent = 'Resend OTP'; // Reset button text
+                } else {
+                    timerSpan.textContent = --timeLeft;
+                }
+            }, 1000);
+        }
+
+        // Initial countdown on page load
+        startCountdown();
+
+        // Prevent form submission and restart countdown on button click
+        resendOtpButton.addEventListener('click', (event) => {  
+            event.preventDefault(); // Prevent form submission
+            clearInterval(countdownInterval); // Clear any existing countdown
+            startCountdown(); // Restart the countdown
+
+            // Trigger the form submission after the countdown ends
+            setTimeout(() => {
+                document.getElementById('resendOtpForm').submit(); // Submit the form
+            }, 30000); // Wait for 30 seconds (timeLeft) before submitting
+        });
+    </script>
+</body>
+
+{% endblock %}

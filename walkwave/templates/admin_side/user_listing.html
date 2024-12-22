@@ -1,0 +1,163 @@
+{% extends 'base.html' %}
+
+{% block title %}
+Users - WalkWave
+{% endblock %}
+{% block content %}
+<link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/sweetalert2@11/dist/sweetalert2.min.css">
+<script src="https://cdn.jsdelivr.net/npm/sweetalert2@11/dist/sweetalert2.all.min.js"></script>
+
+<style>
+    .user-table {
+        width: 100%;
+        border-collapse: separate;
+        border-spacing: 0 15px;
+    }
+    .user-table th {
+        background-color: #f8f9fa;
+        padding: 12px;
+        text-align: left;
+        font-weight: 600;
+        color: #495057;
+    }
+    .user-table td {
+        background-color: #ffffff;
+        padding: 12px;
+        vertical-align: middle;
+    }
+    .user-table tr {
+        box-shadow: 0 2px 4px rgba(0,0,0,0.1);
+        transition: all 0.3s ease;
+    }
+    .user-table tr:hover {
+        transform: translateY(-3px);
+        box-shadow: 0 4px 8px rgba(0,0,0,0.15);
+    }
+    .status-badge {
+        padding: 6px 12px;
+        border-radius: 20px;
+        font-weight: 500;
+    }
+    .status-active {
+        background-color: #d4edda;
+        color: #155724;
+    }
+    .status-inactive {
+        background-color: #f8d7da;
+        color: #721c24;
+    }
+    .action-btn {
+        padding: 6px 12px;
+        border: none;
+        border-radius: 4px;
+        cursor: pointer;
+        transition: background-color 0.3s ease;
+    }
+    .btn-block {
+        background-color: #dc3545;
+        color: white;
+    }
+    .btn-unblock {
+        background-color: #28a745;
+        color: white;
+    }
+    .search-container {
+        margin-bottom: 20px;
+    }
+    .search-input {
+        width: 100%;
+        padding: 10px;
+        border: 1px solid #ced4da;
+        border-radius: 4px;
+    }
+    @media (max-width: 768px) {
+        .user-table, .user-table thead, .user-table tbody, .user-table th, .user-table td, .user-table tr {
+            display: block;
+        }
+        .user-table thead tr {
+            position: absolute;
+            top: -9999px;
+            left: -9999px;
+        }
+        .user-table tr {
+            margin-bottom: 15px;
+        }
+        .user-table td {
+            border: none;
+            position: relative;
+            padding-left: 50%;
+        }
+        .user-table td:before {
+            position: absolute;
+            top: 6px;
+            left: 6px;
+            width: 45%;
+            padding-right: 10px;
+            white-space: nowrap;
+            content: attr(data-label);
+            font-weight: bold;
+        }
+    }
+</style>
+
+<div class="container mt-4">
+    <h1 class="mb-4">User Management</h1>
+    
+    <div class="search-container">
+        <input type="text" id="userSearch" class="search-input" placeholder="Search users...">
+    </div>
+
+    <div class="table-responsive">
+        <table class="user-table">
+            <thead>
+                <tr>
+                    <th>ID</th>
+                    <th>Username</th>
+                    <th>Email</th>
+                    <th>Phone Number</th>
+                    <th>Status</th>
+                    <th>Action</th>
+                </tr>
+            </thead>
+            <tbody>
+                {% for user in users %}
+                {% if not user.is_superuser %}
+                <tr data-user-id="{{ user.id }}">
+                    <td data-label="ID">{{ user.id }}</td>
+                    <td data-label="Username">{{ user.username }}</td>
+                    <td data-label="Email">{{ user.email }}</td>
+                    <td data-label="Phone Number">{{ user.phone_number }}</td>
+                    <td data-label="Status">
+                        <span class="status-badge {% if user.is_blocked %}status-inactive{% else %}status-active{% endif %}">
+                            {% if user.is_blocked %}Inactive{% else %}active{% endif %}
+                        </span>
+                    </td>
+                    <td data-label="Actions">
+                        <!-- Form for Blocking/Unblocking -->
+                        <form 
+                            action="{% url 'user_status' user.id %}" 
+                            method="post" 
+                            onsubmit="return confirmAction('{% if user.is_blocked %}Unblock{% else %}Block{% endif %} this user?')"
+                            style="display: inline;">
+                            {% csrf_token %}
+                            <button type="submit" class="action-btn {% if user.is_blocked %}btn-unblock{% else %}btn-block{% endif %}">
+                                {% if user.is_blocked %}Unblock{% else %}Block{% endif %}
+                            </button>
+                        </form>
+
+                        
+                
+                    </td>
+                </tr>
+                {% endif %}
+                {% endfor %}
+            </tbody>
+            </table>
+            
+            <script>
+                function confirmAction(message) {
+                    return confirm(`Are you sure you want to ${message}?`);
+                }
+            </script>
+            
+{% endblock %}

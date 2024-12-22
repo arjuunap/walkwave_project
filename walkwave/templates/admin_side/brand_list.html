@@ -1,0 +1,219 @@
+{% extends "base.html" %}
+
+{% block title %}
+Brand list - WalkWave
+{% endblock %}
+
+{% block content %}
+{% load static %}
+<link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/sweetalert2@11/dist/sweetalert2.min.css">
+<script src="https://cdn.jsdelivr.net/npm/sweetalert2@11/dist/sweetalert2.all.min.js"></script>
+
+<style>
+    .brand-table {
+        width: 100%;
+        border-collapse: separate;
+        border-spacing: 0 15px;
+    }
+    .brand-table th {
+        background-color: #f8f9fa;
+        padding: 12px;
+        text-align: left;
+        font-weight: 600;
+        color: #495057;
+    }
+    .brand-table td {
+        background-color: #ffffff;
+        padding: 12px;
+        vertical-align: middle;
+    }
+    .brand-table tr {
+        box-shadow: 0 2px 4px rgba(0,0,0,0.1);
+        transition: all 0.3s ease;
+    }
+    .brand-table tr:hover {
+        transform: translateY(-3px);
+        box-shadow: 0 4px 8px rgba(0,0,0,0.15);
+    }
+    .status-badge {
+        padding: 6px 12px;
+        border-radius: 20px;
+        font-weight: 500;
+    }
+    .status-active {
+        background-color: #d4edda;
+        color: #155724;
+    }
+    .status-inactive {
+        background-color: #f8d7da;
+        color: #721c24;
+    }
+    .action-btn {
+        padding: 6px 12px;
+        border: none;
+        border-radius: 4px;
+        cursor: pointer;
+        transition: background-color 0.3s ease;
+        margin-right: 5px;
+    }
+    .btn-block {
+        background-color: #dc3545;
+        color: white;
+    }
+    .btn-unblock {
+        background-color: #28a745;
+        color: white;
+    }
+    .btn-delete {
+        background-color: #6c757d;
+        color: white;
+    }
+    .btn-edit {
+        background-color: #007bff;
+        color: white;
+    }
+    .search-container {
+        margin-bottom: 20px;
+    }
+    .search-input {
+        width: 100%;
+        padding: 10px;
+        border: 1px solid #ced4da;
+        border-radius: 4px;
+    }
+    .brand-logo {
+        width: 50px;
+        height: 50px;
+        object-fit: contain;
+    }
+    .description-cell {
+        max-width: 200px;
+        white-space: nowrap;
+        overflow: hidden;
+        text-overflow: ellipsis;
+    }
+    @media (max-width: 768px) {
+        .brand-table, .brand-table thead, .brand-table tbody, .brand-table th, .brand-table td, .brand-table tr {
+            display: block;
+        }
+        .brand-table thead tr {
+            position: absolute;
+            top: -9999px;
+            left: -9999px;
+        }
+        .brand-table tr {
+            margin-bottom: 15px;
+        }
+        .brand-table td {
+            border: none;
+            position: relative;
+            padding-left: 50%;
+        }
+        .brand-table td:before {
+            position: absolute;
+            top: 6px;
+            left: 6px;
+            width: 45%;
+            padding-right: 10px;
+            white-space: nowrap;
+            content: attr(data-label);
+            font-weight: bold;
+        }
+        .description-cell {
+            max-width: none;
+            white-space: normal;
+        }
+    }
+    .action-btn {
+        text-decoration: none; /* Removes underline */
+    }
+    
+</style>
+
+<div class="container mt-4">
+    <div class="d-flex justify-content-between align-items-center mb-4">
+        <h1>Brand Management</h1>
+        <a href="{% url 'brand:add_brand' %}" class="btn btn-primary">Add Brand</a>
+    </div>
+    
+    {% if messages %}
+    {% for message in messages %}
+        <div class="success-message">{{ message }}</div>
+    {% endfor %}
+    {% endif %}
+
+    <div class="search-container">
+        <input type="text" id="brandSearch" class="search-input" placeholder="Search brands...">
+    </div>
+
+    <div class="table-responsive">
+        <table class="brand-table">
+            <thead>
+                <tr>
+                    <th>ID</th>
+                    <th>Logo</th>
+                    <th>Name</th>
+                    <th>Description</th>
+                    <th>Status</th>
+                    <th>Actions</th>
+                </tr>
+            </thead>
+            <tbody>
+                {% for brand in brands %}
+                <tr data-brand-id="{{ brand.id }}">
+                    <td data-label="ID">{{ brand.id }}</td>
+                    <td data-label="Logo">
+                        {% if brand.logo %}
+                            <img src="{{ brand.logo.url }}" alt="{{ brand.name }} logo" class="brand-logo">
+                        {% else %}
+                            <span>No Logo</span>
+                        {% endif %}
+                    </td>
+                    <td data-label="Name">{{ brand.name }}</td>
+                    <td data-label="Description" class="description-cell" title="{{ brand.description }}">
+                        {{ brand.description }}
+                    </td>
+                    <td data-label="Status">
+                        <span class="status-badge {% if brand.is_active %}status-active{% else %}status-inactive{% endif %}">
+                            {% if brand.is_active %}Active{% else %}Inactive{% endif %}
+                        </span>
+                    </td>
+                    <td data-label="Actions">
+                        <!-- Edit Button -->
+                        <a href="{% url 'brand:edit_brand' brand.id %}" class="action-btn btn-edit">Edit</a>
+
+                        <!-- Block/Unblock Form -->
+                        <form 
+                            action="{% if brand.is_active %}{% url 'brand:block_brand' brand.id %}{% else %}{% url 'brand:unblock_brand' brand.id %}{% endif %}" 
+                            method="post" 
+                            onsubmit="return confirmAction('{% if brand.is_active %}Block{% else %}Unblock{% endif %} this brand?')"
+                            style="display: inline;">
+                            {% csrf_token %}
+                            <button type="submit" class="action-btn {% if brand.is_active %}btn-block{% else %}btn-unblock{% endif %}">
+                                {% if brand.is_active %}Block{% else %}Unblock{% endif %}
+                            </button>
+                        </form>
+
+                        <!-- Delete Form -->
+                        <form 
+                            action="{% url 'brand:soft_delete_brand' brand.id %}" 
+                            method="post" 
+                            onsubmit="return confirmAction('Delete this brand?')" 
+                            style="display: inline;">
+                            {% csrf_token %}
+                            <button type="submit" class="action-btn btn-delete">Delete</button>
+                        </form>
+                    </td>
+                </tr>
+                {% endfor %}
+            </tbody>
+        </table>
+    </div>
+</div>
+
+<script>
+    function confirmAction(message) {
+        return confirm(`Are you sure you want to ${message}?`);
+    }
+</script>
+{% endblock %}

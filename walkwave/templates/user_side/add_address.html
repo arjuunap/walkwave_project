@@ -1,0 +1,187 @@
+{% extends "base_user.html" %}
+
+{% block title %}Add New Address - {{ user.first_name }}{% endblock %}
+
+{% block style %}
+<style>
+    .list-group-item {
+        border: none;
+        padding: 0.75rem 1rem;
+        color: #333;
+        transition: all 0.2s;
+    }
+    .list-group-item:hover {
+        background-color: #f8f9fa;
+        color: #000;
+    }
+    .list-group-item.active {
+        background-color: #f8f9fa;
+        color: #000;
+        border-color: transparent;
+        font-weight: 600;
+    }
+    .list-group-item.active:hover {
+        background-color: #f0f1f2;
+    }
+    .card {
+        border-radius: 0.5rem;
+        border: 1px solid rgba(0,0,0,0.1);
+    }
+    .card-header {
+        border-bottom: 1px solid rgba(0,0,0,0.1);
+    }
+    .breadcrumb {
+        background: transparent;
+        padding: 0;
+        margin-bottom: 1.5rem;
+    }
+    .breadcrumb-item a {
+        color: #6c757d;
+        text-decoration: none;
+    }
+    .breadcrumb-item.active {
+        color: #333;
+    }
+    .breadcrumb-item + .breadcrumb-item::before {
+        content: ">";
+    }
+    .error-message {
+        color: #dc3545;
+        font-size: 0.875em;
+        margin-top: 0.25rem;
+    }
+    .is-invalid {
+        border-color: #dc3545;
+    }
+</style>
+{% endblock %}
+
+{% block body %}
+<div class="container py-4">
+    <!-- Breadcrumb -->
+    <nav aria-label="breadcrumb">
+        <ol class="breadcrumb">
+            <li class="breadcrumb-item"><a href="{% url 'home' %}">Home</a></li>
+            <li class="breadcrumb-item"><a href="">Manage Addresses</a></li>
+            <li class="breadcrumb-item active">Add New Address</li>
+        </ol>
+    </nav>
+
+    <div class="row">
+        <!-- Left Sidebar -->
+        <div class="col-md-3">
+            <div class="card shadow-sm">
+                <div class="card-body">
+                    <h5 class="card-title mb-4">Hi, {{ user.username }}</h5>
+                    <div class="list-group list-group-flush">
+                        <a href="" class="list-group-item list-group-item-action">
+                            <i class="fas fa-user me-2"></i> My Profile
+                        </a>
+                        <a href="" class="list-group-item list-group-item-action">
+                            <i class="fas fa-box me-2"></i> My Orders
+                        </a>
+                        <a href="" class="list-group-item list-group-item-action">
+                            <i class="fas fa-wallet me-2"></i> Wallet
+                        </a>
+                        <a href="" class="list-group-item list-group-item-action">
+                            <i class="fas fa-shopping-cart me-2"></i> Cart
+                        </a>
+                        <a href="" class="list-group-item list-group-item-action">
+                            <i class="fas fa-heart me-2"></i> Wishlist
+                        </a>
+                        <a href="" class="list-group-item list-group-item-action active">
+                            <i class="fas fa-map-marker-alt me-2"></i> Manage Address
+                        </a>
+                        <a href="{% url 'logout' %}" class="list-group-item list-group-item-action text-danger">
+                            <i class="fas fa-sign-out-alt me-2"></i> Log out
+                        </a>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- Main Content -->
+    <div class="col-md-9">
+        <div class="card shadow-sm">
+            <div class="card-header bg-white">
+                <h5 class="card-title mb-0">Add New Address</h5>
+            </div>
+            <div class="card-body">
+                <form method="POST" action="{% url 'user:add_address' %}" novalidate>
+                    {% csrf_token %}
+                    <div class="row mb-3">
+                        <div class="col-md-6">
+                            <label for="label" class="form-label">Address Label</label>
+                            <select class="form-select {% if errors.label %}is-invalid{% endif %}" id="label" name="label">
+                                <option value="">Select Label</option>
+                                <option value="home" {% if form_data.label == "home" %}selected{% endif %}>Home</option>
+                                <option value="work" {% if form_data.label == "work" %}selected{% endif %}>Work</option>
+                                <option value="other" {% if form_data.label == "other" %}selected{% endif %}>Other</option>
+                            </select>
+                            {% if errors.label %}
+                                <div class="invalid-feedback">{{ errors.label }}</div>
+                            {% endif %}
+                        </div>
+                    </div>
+                    
+                    <div class="row mb-3">
+                        <div class="col-md-6">
+                            <label for="mobile_no" class="form-label">Mobile Number</label>
+                            <input type="tel" class="form-control {% if errors.mobile_no %}is-invalid{% endif %}" id="mobile_no" name="mobile_no" value="{{ form_data.mobile_no|default:'' }}" required pattern="[6-9]\d{9}">
+                            {% if errors.mobile_no %}
+                                <div class="invalid-feedback">{{ errors.mobile_no }}</div>
+                            {% endif %}
+                        </div>
+                    </div>
+                    
+                    <div class="row mb-3">
+                        <div class="col-md-6">
+                            <label for="pin_code" class="form-label">PIN Code</label>
+                            <input type="text" class="form-control {% if errors.pin_code %}is-invalid{% endif %}" id="pin_code" name="pin_code" value="{{ form_data.pin_code|default:'' }}" required pattern="\d{6}">
+                            {% if errors.pin_code %}
+                                <div class="invalid-feedback">{{ errors.pin_code }}</div>
+                            {% endif %}
+                        </div>
+                        <div class="col-md-6">
+                            <label for="state" class="form-label">State</label>
+                            <input type="text" class="form-control {% if errors.state %}is-invalid{% endif %}" id="state" name="state" value="{{ form_data.state|default:'' }}" placeholder="Enter your state">
+                            {% if errors.state %}
+                                <div class="invalid-feedback">{{ errors.state }}</div>
+                            {% endif %}
+                        </div>
+                    </div>
+                    
+                    <div class="mb-3">
+                        <label for="address" class="form-label">Address (House No, Building, Street, Area)</label>
+                        <textarea class="form-control {% if errors.address %}is-invalid{% endif %}" id="address" name="address" rows="2" required>{{ form_data.address|default:'' }}</textarea>
+                        {% if errors.address %}
+                            <div class="invalid-feedback">{{ errors.address }}</div>
+                        {% endif %}
+                    </div>
+                    
+                    <div class="mb-3">
+                        <label for="city" class="form-label">City/Town</label>
+                        <input type="text" class="form-control {% if errors.city %}is-invalid{% endif %}" id="city" name="city" value="{{ form_data.city|default:'' }}">
+                        {% if errors.city %}
+                            <div class="invalid-feedback">{{ errors.city }}</div>
+                        {% endif %}
+                    </div>
+                    
+                    <div class="mb-3 form-check">
+                        <input type="checkbox" class="form-check-input" id="default_address" name="default_address" {% if form_data.default_address %}checked{% endif %}>
+                        <label class="form-check-label" for="default_address">Make this my default address</label>
+                    </div>
+                    
+                    <div class="d-grid gap-2">
+                        <button type="submit" class="btn btn-primary">Save Address</button>
+                        <a href="{% url 'user:user_address' %}" class="btn btn-secondary">Cancel</a>
+                    </div>
+                </form>
+                
+                
+            </div>
+        </div>
+    </div>
+</div>
+
+{% endblock %}

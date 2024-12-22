@@ -1,0 +1,235 @@
+{% extends "base.html" %}
+
+{% block title %}
+Add Product - WalkWave
+<link href="https://cdnjs.cloudflare.com/ajax/libs/cropperjs/1.5.13/cropper.min.css" rel="stylesheet">
+<script src="https://cdnjs.cloudflare.com/ajax/libs/cropperjs/1.5.13/cropper.min.js"></script>
+{% endblock %}
+
+{% block content %}
+<div class="container mt-4">
+    <h1 class="mb-4 text-center">Add New Product</h1>
+    <form method="post" enctype="multipart/form-data" action="{% url 'product:add_product' %}" id="product-form">
+        {% csrf_token %}
+        <div class="row">
+            <!-- Product Name -->
+            <div class="col-md-6 mb-3">
+                <label for="name" class="form-label">Product Name</label>
+                <input type="text" class="form-control" id="name" name="name" placeholder="Enter product name"
+                       value="{{ form_data.name|default:'' }}" >
+                {% if errors.name %}
+                <div class="text-danger small mt-1">{{ errors.name }}</div>
+                {% endif %}
+            </div>
+
+            <!-- Product Category -->
+            <div class="col-md-6 mb-3">
+                <label for="product_category" class="form-label">Category</label>
+                <select class="form-select" id="product_category" name="product_category" >
+                    <option value="" disabled {% if not form_data.product_category %}selected{% endif %}>Select a category</option>
+                    {% for category in categories %}
+                        <option value="{{ category.id }}" {% if category.id|stringformat:"s" == form_data.product_category %}selected{% endif %}>
+                            {{ category.name }}
+                        </option>
+                    {% endfor %}
+                </select>
+                {% if errors.product_category %}
+                <div class="text-danger small mt-1">{{ errors.product_category }}</div>
+                {% endif %}
+            </div>
+
+            <!-- Product Brand -->
+            <div class="col-md-6 mb-3">
+                <label for="product_brand" class="form-label">Brand</label>
+                <select class="form-select" id="product_brand" name="product_brand" >
+                    <option value="" disabled {% if not form_data.product_brand %}selected{% endif %}>Select a brand</option>
+                    {% for brand in brands %}
+                        <option value="{{ brand.id }}" {% if brand.id|stringformat:"s" == form_data.product_brand %}selected{% endif %}>
+                            {{ brand.name }}
+                        </option>
+                    {% endfor %}
+                </select>
+                {% if errors.product_brand %}
+                <div class="text-danger small mt-1">{{ errors.product_brand }}</div>
+                {% endif %}
+            </div>
+
+            <!-- Price -->
+            <div class="col-md-6 mb-3">
+                <label for="price" class="form-label">Price</label>
+                <input type="text" step="0.01" class="form-control" id="price" name="price" placeholder="Enter price"
+                       value="{{ form_data.price|default:'' }}" >
+                {% if errors.price %}
+                <div class="text-danger small mt-1">{{ errors.price }}</div>
+                {% endif %}
+            </div>
+
+            <!-- Offer Price -->
+            <div class="col-md-6 mb-3">
+                <label for="offer_price" class="form-label">Offer Price</label>
+                <input type="text" step="0.01" class="form-control" id="offer_price" name="offer_price"
+                       placeholder="Enter offer price (optional)" value="{{ form_data.offer_price|default:'' }}">
+                {% if errors.offer_price %}
+                <div class="text-danger small mt-1">{{ errors.offer_price }}</div>
+                {% endif %}
+            </div>
+
+            <!-- Thumbnail -->
+            <div class="col-md-6 mb-3">
+                <label for="thumbnail" class="form-label">Thumbnail</label>
+                <input type="file" class="form-control image-input" id="thumbnail" name="thumbnail" accept="image/*">
+                
+                <div id="cropping-container" class="mt-3" style="display: none;">
+                    <img id="crop-image" style="max-width: 100%; max-height: 400px;" />
+                    <div class="mt-2">
+                        <button type="button" class="btn btn-secondary btn-sm me-2" id="crop-save-btn">Crop</button>
+                        <button type="button" class="btn btn-outline-secondary btn-sm" id="crop-cancel-btn">Cancel</button>
+                    </div>
+                </div>
+                <div id="final-preview" class="mt-3" style="display: none;">
+                    <img id="cropped-image" style="max-width: 200px; height: auto;" />
+                    <button type="button" class="btn btn-link btn-sm text-danger" id="remove-image-btn">Remove</button>
+                </div>
+                <input type="hidden" name="cropped_thumbnail" id="cropped-thumbnail-input">
+                {% if errors.thumbnail %}
+                <div class="text-danger small mt-1">{{ errors.thumbnail }}</div>
+                {% endif %}
+            </div>
+
+            <!-- Product Description -->
+            <div class="col-12 mb-3">
+                <label for="product_description" class="form-label">Description</label>
+                <textarea class="form-control" id="product_description" name="product_description" rows="4"
+                          placeholder="Enter product description">{{ form_data.product_description|default:'' }}</textarea>
+                {% if errors.product_description %}
+                <div class="text-danger small mt-1">{{ errors.product_description }}</div>
+                {% endif %}
+            </div>
+
+            <div class="col-12 mb-3">
+                <h5>Variants</h5>
+                <div id="variant-container">
+                    {% for variant in form_data.variants %}
+                    <div class="row mb-3">
+                        <div class="col-md-3">
+                            <input type="text" class="form-control" name="variant_size[]" placeholder="Size (e.g., 8)" 
+                                   value="{{ variant.size }}" >
+                            {% if errors.variant_size %}
+                            <div class="text-danger small mt-1">{{ errors.variant_size }}</div>
+                            {% endif %}
+                        </div>
+                        
+                        <div class="col-md-3">
+                            <input type="number" class="form-control" name="variant_stock[]" placeholder="Stock" 
+                                   value="{{ variant.stock }}" >
+                            {% if errors.variant_stock %}
+                            <div class="text-danger small mt-1">{{ errors.variant_stock }}</div>
+                            {% endif %}
+                        </div>
+                        <div class="col-md-3 d-flex align-items-center">
+                            <div class="form-check">
+                                <input class="form-check-input" type="checkbox" name="variant_is_active[]" value="1" 
+                                       {% if variant.is_active %}checked{% endif %}>
+                                <label class="form-check-label">Active</label>
+                            </div>
+                        </div>
+                    </div>
+                    {% endfor %}
+                </div>
+                <button type="button" class="btn btn-secondary btn-sm" id="add-variant-btn">Add Variant</button>
+            </div>
+        </div>
+
+        <div class="text-center">
+            <button type="submit" class="btn btn-primary">Create Product</button>
+        </div>
+    </form>
+</div>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/cropperjs/1.5.13/cropper.min.js"></script>
+<script src="https://cdn.jsdelivr.net/npm/cropperjs@1.5.12/dist/cropper.min.js"></script>
+<link href="https://cdn.jsdelivr.net/npm/cropperjs@1.5.12/dist/cropper.min.css" rel="stylesheet">
+
+<script>
+            let cropper;
+
+            document.getElementById('thumbnail').addEventListener('change', function (event) {
+                const file = event.target.files[0];
+                if (file) {
+                    const reader = new FileReader();
+                    reader.onload = function (e) {
+                        const croppingContainer = document.getElementById('cropping-container');
+                        const cropImage = document.getElementById('crop-image');
+
+                        cropImage.src = e.target.result;
+                        croppingContainer.style.display = 'block';
+
+                        // Initialize Cropper
+                        if (cropper) cropper.destroy();
+                        cropper = new Cropper(cropImage, {
+                            aspectRatio: 1,
+                            viewMode: 1,
+                        });
+                    };
+                    reader.readAsDataURL(file);
+                }
+            });
+
+            // Handle crop save
+            document.getElementById('crop-save-btn').addEventListener('click', function () {
+                if (cropper) {
+                    const croppedCanvas = cropper.getCroppedCanvas();
+                    const croppedImage = croppedCanvas.toDataURL('image/jpeg');
+
+                    document.getElementById('cropped-image').src = croppedImage;
+                    document.getElementById('cropped-thumbnail-input').value = croppedImage;
+
+                    document.getElementById('final-preview').style.display = 'block';
+                    document.getElementById('cropping-container').style.display = 'none';
+
+                    cropper.destroy();
+                    cropper = null;
+                }
+            });
+
+            // Handle crop cancel
+            document.getElementById('crop-cancel-btn').addEventListener('click', function () {
+                document.getElementById('cropping-container').style.display = 'none';
+                if (cropper) {
+                    cropper.destroy();
+                    cropper = null;
+                }
+            });
+
+            // Remove cropped image
+            document.getElementById('remove-image-btn').addEventListener('click', function () {
+                document.getElementById('final-preview').style.display = 'none';
+                document.getElementById('cropped-thumbnail-input').value = '';
+                document.getElementById('thumbnail').value = ''; // Reset file input
+            });
+
+            // Add functionality for adding more variants
+            document.getElementById('add-variant-btn').addEventListener('click', function() {
+                const variantContainer = document.getElementById('variant-container');
+                const variantRow = `
+                    <div class="row mb-3">
+                        <div class="col-md-3">
+                            <input type="text" class="form-control" name="variant_size[]" placeholder="Size (e.g., 8)" required>
+                        </div>
+                        <div class="col-md-3">
+                            <input type="number" class="form-control" name="variant_stock[]" placeholder="Stock" required>
+                        </div>
+                        <div class="col-md-3 d-flex align-items-center">
+                            <div class="form-check">
+                                <input class="form-check-input" type="checkbox" name="variant_is_active[]" value="1" checked>
+                                <label class="form-check-label">Active</label>
+                            </div>
+                            <button type="button" class="btn btn-link text-danger remove-variant-btn">Remove</button>
+                        </div>
+                    </div>
+                `;
+                variantContainer.insertAdjacentHTML('beforeend', variantRow);
+            });
+
+
+</script>
+{% endblock %}

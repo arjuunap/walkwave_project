@@ -1,0 +1,177 @@
+{% extends "base.html" %}
+
+{% block title %}
+Product details - WalkWave
+{% endblock %}
+
+{% block content %}
+<style>
+    body {
+        font-family: Arial, sans-serif;
+        line-height: 1.6;
+        margin: 0;
+        padding: 20px;
+        background-color: #f4f4f4;
+    }
+    .container {
+        max-width: 800px;
+        margin: 0 auto;
+        background-color: #fff;
+        padding: 20px;
+        border-radius: 5px;
+        box-shadow: 0 0 10px rgba(0,0,0,0.1);
+    }
+    h1 {
+        color: #333;
+    }
+    .product-info {
+        margin-bottom: 20px;
+    }
+    .product-info p {
+        margin: 10px 0;
+    }
+    .image-gallery {
+        display: flex;
+        flex-wrap: wrap;
+        gap: 10px;
+        margin-bottom: 20px;
+    }
+    .thumbnail {
+        width: 100px;
+        height: 100px;
+        object-fit: cover;
+        cursor: pointer;
+        border: 2px solid transparent;
+    }
+    .thumbnail.active {
+        border-color: #008CBA;
+    }
+    .main-image {
+        width: 100%;
+        max-height: 400px;
+        object-fit: contain;
+        margin-bottom: 20px;
+    }
+    .actions {
+        display: flex;
+        flex-wrap: wrap;
+        gap: 10px;
+        margin-top: 20px;
+    }
+    .btn {
+        padding: 10px 15px;
+        border: none;
+        border-radius: 5px;
+        cursor: pointer;
+        font-size: 16px;
+        transition: background-color 0.3s;
+        flex: 1;
+        min-width: 120px;
+        text-align: center;
+    }
+    .btn-block {
+        background-color: #4CAF50;
+        color: white;
+    }
+    .btn-block.unblock {
+        background-color: #f44336;
+    }
+    .btn-delete {
+        background-color: #f44336;
+        color: white;
+    }
+    .btn-edit {
+        background-color: #008CBA;
+        color: white;
+    }
+    .btn-variants {
+        background-color: #FF9800;
+        color: white;
+    }
+    .btn:hover {
+        opacity: 0.8;
+    }
+    @media (max-width: 600px) {
+        .actions {
+            flex-direction: column;
+        }
+        .btn {
+            width: 100%;
+        }
+    }
+</style>
+<div class="container">
+    <h1>Product Details</h1>
+    <div class="image-gallery">
+        <img src="{{ product.thumbnail.url }}" alt="Main Product Image" class="main-image" id="mainImage">
+        {% for image in product.images.all %}
+        <img src="{{ image.image.url }}" alt="Product Thumbnail {{ forloop.counter }}" class="thumbnail" onclick="changeMainImage(this)">
+        {% endfor %}
+    </div>
+    <div class="product-info">
+        <p><strong>ID:</strong> {{ product.id }}</p>
+        <p><strong>Name:</strong> {{ product.name }}</p>
+        <p><strong>Description:</strong> {{ product.product_description }}</p>
+        <p><strong>Category:</strong> {{ product.product_category.name }}</p>
+        <p><strong>Brand:</strong> {{ product.product_brand.name }}</p>
+        <p><strong>Price:</strong> ${{ product.price }}</p>
+        <p><strong>Offer Price:</strong> ${{ product.offer_price }}</p>
+        <p><strong>Discount:</strong> {{ product.percentage_discount }}%</p>
+    </div>
+    <div class="actions">
+        <form action="{% url 'product:product_status' product.id %}">
+            <button id="blockBtn" class="btn btn-block">
+                {% if product.is_active %} Block {% else %} Unblock {% endif %}
+            </button>
+        </form>
+        
+        <form method="post" action="{% url 'product:product_soft_delete' product.id %}">
+            {% csrf_token %}
+            <button type="submit" class="btn btn-delete">
+                 Delete 
+            </button>
+        </form>
+        
+        
+
+        <form action="{% url 'product:edit_product' product.id %}">
+            <button id="editBtn" class="btn btn-edit">Edit</button>
+        </form>
+        
+
+        <form action="{% url 'product:product_variants_list' product.id %}">
+            <button id="variantsBtn" class="btn btn-variants">View All Variants</button>
+
+        </form>
+
+        <form action="{% url 'product:edit_product_images' product.id %}" method="post">
+            {% csrf_token %}
+            <button id="editBtn" class="btn btn-edit">Edit product images</button>
+        </form>
+
+        
+    </div>
+</div>
+
+<script>
+    // Toggle block/unblock functionality
+    const blockBtn = document.getElementById('blockBtn');
+    blockBtn.addEventListener('click', function() {
+        if (this.textContent.trim() === 'Block') {
+            this.textContent = 'Unblock';
+            this.classList.add('unblock');
+        } else {
+            this.textContent = 'Block';
+            this.classList.remove('unblock');
+        }
+    });
+
+    // Function to change the main image when a thumbnail is clicked
+    function changeMainImage(thumbnail) {
+        const mainImage = document.getElementById('mainImage');
+        mainImage.src = thumbnail.src;
+        document.querySelectorAll('.thumbnail').forEach(thumb => thumb.classList.remove('active'));
+        thumbnail.classList.add('active');
+    }
+</script>
+{% endblock %}

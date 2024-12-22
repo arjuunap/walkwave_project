@@ -1,0 +1,44 @@
+{% extends 'base.html' %}
+
+{% block content %}
+<div class="container">
+    {% if messages%}
+    {% for message in messages %}
+    <p style="color: red;">{{message}}</p>
+    {% endfor%}
+    {% endif %}
+    <h2>Edit Images for {{ product.name }}</h2>
+
+    <!-- Display Existing Images -->
+    <div class="row">
+        {% for image in images %}
+        <div class="col-md-4 mb-3">
+            <div class="card">
+                <img src="{{ image.image.url }}" class="card-img-top" alt="Product Image">
+                <div class="card-body text-center">
+                    <form method="post" action="">
+                        {% csrf_token %}
+                        <input type="hidden" name="delete_image_id" value="{{ image.id }}">
+                        <button type="submit" class="btn btn-danger">Delete</button>
+                    </form>
+                </div>
+            </div>
+        </div>
+        {% endfor %}
+    </div>
+
+    <!-- Add New Image -->
+    <div class="mt-4">
+        <h3>Add New Image</h3>
+        <form method="post" enctype="multipart/form-data" action="">
+            {% csrf_token %}
+            <div class="form-group">
+                <input type="file" name="new_image" class="form-control" accept="image/*" required>
+            </div>
+            <button type="submit" class="btn btn-success mt-2">Upload</button>
+        </form>
+    </div>
+
+    <a href="{% url 'product:admin_side_product_detail' product.id %}" class="btn btn-secondary mt-4">Back to Product List</a>
+</div>
+{% endblock %}

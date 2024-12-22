@@ -1,0 +1,145 @@
+{% extends "base.html" %}
+
+{% block title %}
+Product Variants - {{ product.name }}
+{% endblock %}
+
+{% block content %}
+<style>
+    body {
+        font-family: Arial, sans-serif;
+        background-color: #f9f9f9;
+        margin: 0;
+        padding: 0;
+    }
+
+    .container {
+        max-width: 900px;
+        margin: 20px auto;
+        padding: 20px;
+        background-color: #fff;
+        border-radius: 8px;
+        box-shadow: 0 2px 10px rgba(0, 0, 0, 0.1);
+    }
+
+    h1 {
+        text-align: center;
+        color: #333;
+        margin-bottom: 20px;
+    }
+
+    p {
+        font-size: 16px;
+        margin: 5px 0;
+        color: #555;
+    }
+
+    hr {
+        margin: 20px 0;
+        border: 0;
+        height: 1px;
+        background: #ddd;
+    }
+
+    h2 {
+        margin-bottom: 15px;
+        color: #444;
+    }
+
+    table {
+        width: 100%;
+        border-collapse: collapse;
+        margin-bottom: 20px;
+    }
+
+    table th,
+    table td {
+        padding: 10px;
+        text-align: left;
+        border: 1px solid #ddd;
+    }
+
+    table th {
+        background-color: #f4f4f4;
+        color: #333;
+    }
+
+    table td {
+        color: #555;
+    }
+
+    table tr:nth-child(even) {
+        background-color: #f9f9f9;
+    }
+
+    @media (max-width: 768px) {
+        table th,
+        table td {
+            padding: 8px;
+        }
+
+        table {
+            font-size: 14px;
+        }
+    }
+
+    @media (max-width: 480px) {
+        h1, h2 {
+            font-size: 20px;
+        }
+
+        p {
+            font-size: 14px;
+        }
+
+        table {
+            font-size: 12px;
+        }
+    }
+
+    .no-variants {
+        text-align: center;
+        font-size: 18px;
+        color: #888;
+    }
+</style>
+
+<div class="container">
+    <h1>Variants for {{ product.name }}</h1>
+
+    <p><strong>Product ID:</strong> {{ product.id }}</p>
+    <p><strong>Description:</strong> {{ product.product_description }}</p>
+    <p><strong>Price:</strong> ${{ product.price }}</p>
+    <p><strong>Offer Price:</strong> ${{ product.offer_price }}</p>
+    <hr>
+
+    <h2>Variants</h2>
+    {% if variants %}
+        <table>
+            <thead>
+                <tr>
+                    <th>Size</th>
+                    <th>Stock</th>
+                    <th>Status</th>
+                </tr>
+            </thead>
+            <tbody>
+                {% for variant in variants %}
+                <tr>
+                    <td>{{ variant.size }}</td>
+                    <td>{{ variant.variant_stock }}</td>
+                    <td>
+                        <span style="color: {% if variant.variant_status %}green{% else %}red{% endif %};">
+                            {% if variant.variant_status %}Active{% else %}Inactive{% endif %}
+                        </span>
+                        
+                    </td>
+                </tr>
+                {% endfor %}
+            </tbody>
+        </table>
+    {% else %}
+        <p class="no-variants">No variants available for this product.</p>
+    {% endif %}
+</div>
+{% endblock %}

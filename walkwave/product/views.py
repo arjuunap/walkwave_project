@@ -459,18 +459,17 @@ def product_shop(request):
 def product_detail(request, id):
     product = get_object_or_404(Product, id=id)
     
-    available_sizes = product.variants.filter(
+    available_variants = product.variants.filter(
         Q(variant_stock__gt=0) & Q(variant_status=True)
-    ).values_list('size', flat=True).distinct()
+    )
     
     related_products = Product.objects.filter(product_category=product.product_category).exclude(id=product.id)
     
     return render(request, 'user_side/product-detail.html', {
         'product': product,
         'related_products': related_products,
-        'available_sizes': available_sizes
+        'available_variants': available_variants,  
     })
-
 
 
 
@@ -547,3 +546,34 @@ def edit_product_images(request, id):
         'product': product,
         'images': images,
     })
+
+
+
+
+from .models import Product  
+from django.http import JsonResponse
+
+def product_filter(request):
+    products = Product.objects.all()
+
+    # Get sort parameter
+    sort_option = request.GET.get('sort', None)
+
+    # Apply sorting logic
+    if sort_option == 'featured':
+        products = products.order_by('-featured')  # Replace with your field
+    elif sort_option == 'popularity':
+        products = products.order_by('-popularity')  # Replace with your field
+    elif sort_option == 'price_low_to_high':
+        products = products.order_by('price')
+    elif sort_option == 'price_high_to_low':
+        products = products.order_by('-price')
+    elif sort_option == 'new_arrivals':
+        products = products.order_by('-created_at')
+    elif sort_option == 'a_to_z':
+        products = products.order_by('name')
+    elif sort_option == 'z_to_a':
+        products = products.order_by('-name')
+
+
+    return JsonResponse({'products': products}) 

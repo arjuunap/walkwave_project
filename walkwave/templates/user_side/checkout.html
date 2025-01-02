@@ -1,0 +1,325 @@
+
+
+{% extends "base_user.html" %}
+{% load static %}
+
+
+{% block title %}Checkout{% endblock %}
+
+{% block link %}
+<link rel="stylesheet" href="{% static 'user_side/css/checkout.css' %}">
+{% endblock %}
+
+{% block style %}
+
+<style>
+    /* Custom styles for the left sidebar */
+.sidebar {
+    position: fixed;
+    top: 0;
+    left: 0;
+    width: 300px; /* Adjust width as needed */
+    height: 100vh; /* Full height */
+    background-color: #f8f9fa; /* Light background for the sidebar */
+    padding: 20px;
+    box-shadow: 2px 0 5px rgba(0, 0, 0, 0.1);
+    z-index: 1000;
+}
+
+.sidebar .checkout-section {
+    margin-bottom: 20px;
+}
+
+.sidebar .section-header {
+    margin-bottom: 15px;
+}
+
+.sidebar .price-details {
+    padding: 10px 0;
+}
+
+.sidebar .price-row, 
+.sidebar .summary-item {
+    display: flex;
+    justify-content: space-between;
+    padding: 5px 0;
+    border-bottom: 1px solid #ddd;
+}
+
+.sidebar .price-total {
+    font-weight: bold;
+    font-size: 1.2rem;
+}
+
+.sidebar .btn-place-order {
+    background-color: #28a745;
+    color: white;
+    font-size: 1.2rem;
+}
+
+.sidebar .btn-place-order:hover {
+    background-color: #218838;
+}
+
+        .checkout-container {
+            max-width: 1200px;
+            margin: 0 auto;
+            padding: 20px;
+        }
+        
+        .checkout-content {
+            display: flex;
+            gap: 30px;
+        }
+        
+        .main-content {
+            flex: 1;
+        }
+        
+        .sidebar {
+            width: 350px;
+            position: sticky;
+            top: 20px;
+            align-self: flex-start;
+        }
+        
+        .checkout-section {
+            background: #fff;
+            border-radius: 8px;
+            box-shadow: 0 1px 3px rgba(0,0,0,0.1);
+            margin-bottom: 20px;
+            padding: 20px;
+        }
+        
+        .section-header {
+            border-bottom: 1px solid #eee;
+            padding-bottom: 10px;
+            margin-bottom: 20px;
+        }
+        
+        .address-card {
+            border: 1px solid #ddd;
+            border-radius: 6px;
+            padding: 15px;
+            margin-bottom: 15px;
+            cursor: pointer;
+        }
+        
+        .address-card.selected {
+            border-color: #007bff;
+            background-color: #f8f9ff;
+        }
+        
+        .order-item {
+            display: flex;
+            gap: 20px;
+            padding: 15px 0;
+            border-bottom: 1px solid #eee;
+        }
+        
+        .item-image {
+            width: 100px;
+            height: 100px;
+            object-fit: cover;
+            border-radius: 4px;
+        }
+        
+        .price-details {
+            padding: 15px 0;
+        }
+        
+        .price-row {
+            display: flex;
+            justify-content: space-between;
+            margin-bottom: 12px;
+            color: #333;
+        }
+        
+        .price-total {
+            border-top: 1px solid #eee;
+            padding-top: 15px;
+            font-weight: bold;
+            font-size: 1.1em;
+        }
+        
+        .btn-place-order {
+            background: #007bff;
+            color: white;
+            width: 100%;
+            padding: 12px;
+            border: none;
+            border-radius: 6px;
+            font-size: 1.1em;
+            cursor: pointer;
+        }
+        
+        .btn-place-order:hover {
+            background: #0056b3;
+        }
+        
+        @media (max-width: 768px) {
+            .checkout-content {
+                flex-direction: column;
+            }
+            
+            .sidebar {
+                width: 100%;
+                position: static;
+            }
+        }
+        .messages {
+    list-style: none;
+    padding: 0;
+    margin: 10px 0;
+}
+.alert-success {
+    color: #155724;
+    background-color: #d4edda;
+    border-color: #c3e6cb;
+    padding: 10px;
+    border-radius: 5px;
+}
+.alert-error {
+    color: #721c24;
+    background-color: #f8d7da;
+    border-color: #f5c6cb;
+    padding: 10px;
+    border-radius: 5px;
+}
+.alert-warning {
+    color: #856404;
+    background-color: #fff3cd;
+    border-color: #ffeeba;
+    padding: 10px;
+    border-radius: 5px;
+}
+.alert-info {
+    color: #0c5460;
+    background-color: #d1ecf1;
+    border-color: #bee5eb;
+    padding: 10px;
+    border-radius: 5px;
+}
+
+    
+</style>
+
+{% endblock %}
+
+{% block body %}
+<div class="checkout-container">
+    {% if messages %}
+    <ul class="messages">
+        {% for message in messages %}
+            <li class="alert alert-{{ message.tags }}">{{ message }}</li>
+        {% endfor %}
+    </ul>
+    {% endif %}
+ 
+    
+
+    <h1 class="mb-4">Checkout</h1>
+    <form method="POST" action="{% url 'checkout_page' %}">
+        {% csrf_token %}
+        <div class="checkout-content">
+            <div class="main-content">
+                <!-- Delivery Address Section -->
+                <div class="checkout-section">
+                    <div class="section-header">
+                        <h2 class="h5 mb-0">1. Delivery Address</h2>
+                    </div>
+                    <div class="section-content">
+                        {% for address in addresses %}
+                        <div class="form-check address-card {% if address.default_address %}selected{% endif %}">
+                            <input class="form-check-input" type="radio" name="address_id" id="address_{{ address.id }}" value="{{ address.id }}" {% if address.default_address %}checked{% endif %}>
+                            <label class="form-check-label" for="address_{{ address.id }}">
+                                <strong>{{ address.label }}</strong><br>
+                                {{ address.address }}<br>
+                                {{ address.city }}, {{ address.state }} - {{ address.pin_code }}<br>
+                                Phone: {{ address.phone_number }}
+                            </label>
+                        </div>
+                        {% empty %}
+                        <p>No addresses found. Please add an address.</p>
+                        {% endfor %}
+                    </div>
+                </div>
+                
+                <!-- Order Summary Section -->
+                <div class="checkout-section">
+                    <div class="section-header">
+                        <h2 class="h5 mb-0">2. Order Summary</h2>
+                    </div>
+                    <div class="section-content">
+                        {% for item in cart.items.all %}
+                        <div class="order-item">
+                            <img src="{{ item.product.images.first.image.url }}" alt="{{ item.product.name }}" class="item-image">
+                            <div>
+                                <h6>{{ item.product.name }}</h6>
+                                <p class="mb-1">Size: {{ item.variant.size }}</p>
+                                <p class="mb-1">Quantity: {{ item.quantity }}</p>
+                                <p class="mb-0">Price: ₹{{ item.price }}</p>
+                                <p class="mb-0">Total: ₹{{ item.total_price }}</p>
+                            </div>
+                        </div>
+                        {% empty %}
+                        <p>Your cart is empty.</p>
+                        {% endfor %}
+                    </div>
+                </div>
+                
+                <!-- Payment Method Section -->
+                <div class="checkout-section">
+                    <div class="section-header">
+                        <h2 class="h5 mb-0">3. Payment Method</h2>
+                    </div>
+                    <div class="section-content">
+                        {% for method in payment_methods %}
+                        <div class="form-check">
+                            <input class="form-check-input" type="radio" name="payment_method" id="payment_{{ method.method }}" value="{{ method.method }}" {% if forloop.first %}checked{% endif %}>
+                            <label class="form-check-label" for="payment_{{ method.method }}">
+                                {{ method.display }}
+                            </label>
+                        </div>
+                        {% endfor %}
+                    </div>
+                </div>
+            </div>
+
+            <!-- Price Details Sidebar -->
+            <div class="sidebar">
+                <div class="checkout-section">
+                    <div class="section-header">
+                        <h2 class="h5 mb-0">Price Details</h2>
+                    </div>
+                    <div class="price-details">
+                        <div class="price-row">
+                            <span>Price ({{ cart.items.count }} items)</span>
+                            <span>₹ {{ cart.calculate_total_price|floatformat:2 }}</span>
+                        </div>
+                        <div class="price-row">
+                            <span>Saved</span>
+                            <span>₹ {{ total_discount|floatformat:2 }}</span>
+                        </div>
+                        <div class="price-row">
+                            <span>Coupon Applied</span>
+                            <span>₹ {% if discount_amount > 0 %}{{ discount_amount|floatformat:2 }}{% else %}0{% endif %}</span>
+                        </div>
+                        <div class="price-row">
+                            <span>Delivery Charges</span>
+                            <span>{% if cart.total_price > 4999 %}<span class="text-success">FREE</span>{% else %}₹ {{ cart.delivery_charge }}{% endif %}</span>
+                        </div>
+                        <div class="price-row price-total">
+                            <span>Total Amount</span>
+                            <span>₹ {{ total_amount|floatformat:2 }}</span>
+                        </div>
+                    </div>
+                    <button id="submitBtn" type="submit" class="btn-place-order">Place Order</button>
+                </div>
+            </div>
+        </div>
+    </form>
+</div>
+
+
+{% endblock %}

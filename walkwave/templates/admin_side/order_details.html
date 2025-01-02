@@ -1,0 +1,91 @@
+{% extends 'base.html' %}
+<style>
+    .alert {
+    margin-top: 10px;
+    padding: 15px;
+    font-size: 14px;
+    border-radius: 5px;
+}
+.alert-dismissible .btn-close {
+    color: inherit;
+}
+    
+</style>
+{% block content %}
+<div class="container py-5">
+    <h2 class="mb-4 text-center">Order Management</h2>
+
+    {% if messages %}
+<div class="container mt-3">
+    {% for message in messages %}
+        <div class="alert 
+            {% if message.tags == 'success' %}alert-success
+            {% elif message.tags == 'error' %}alert-danger
+            {% elif message.tags == 'warning' %}alert-warning
+            {% elif message.tags == 'info' %}alert-info
+            {% else %}alert-secondary{% endif %} 
+            alert-dismissible fade show" role="alert">
+            {{ message }}
+            <button type="button" class="btn-close" data-bs-dismiss="alert" aria-label="Close"></button>
+        </div>
+    {% endfor %}
+</div>
+{% endif %}
+
+
+    {% if orders %}
+        <table class="table table-bordered table-hover">
+            <thead class="table-dark">
+                <tr>
+                    <th>Order ID</th>
+                    <th>User</th>
+                    <th>Order Date</th>
+                    <th>Status</th>
+                    <th>Total Price</th>
+                    <th>Actions</th>
+                </tr>
+            </thead>
+            <tbody>
+                {% for order in orders %}
+                    <tr>
+                        <td>{{ order.order_id }}</td>
+                        <td>{{ order.user.username }}</td>
+                        <td>{{ order.ordered_at|date:"d M Y, H:i" }}</td>
+                        <td>
+                            <span class="badge 
+                                {% if order.status == 'Delivered' %}bg-success
+                                {% elif order.status == 'Pending' %}bg-warning
+                                {% elif order.status == 'Cancelled' %}bg-danger
+                                {% else %}bg-info{% endif %}">
+                                {{ order.status }}
+                            </span>
+                        </td>
+                        <td>₹{{ order.total_price }}</td>
+                        <td>
+                            <form method="POST" action="{% url 'admin_change_order_status' order.id %}" class="d-inline">
+                                {% csrf_token %}
+                                <select name="status" class="form-select form-select-sm d-inline w-auto">
+                                    <option value="Pending" {% if order.status == 'Pending' %}selected{% endif %}>Pending</option>
+                                    <option value="Processing" {% if order.status == 'Processing' %}selected{% endif %}>Processing</option>
+                                    <option value="Shipped" {% if order.status == 'Shipped' %}selected{% endif %}>Shipped</option>
+                                    <option value="Delivered" {% if order.status == 'Delivered' %}selected{% endif %}>Delivered</option>
+                                    <option value="Cancelled" {% if order.status == 'Cancelled' %}selected{% endif %}>Cancelled</option>
+                                </select>
+                                <button type="submit" class="btn btn-sm btn-primary">Update</button>
+                            </form>
+                            <form method="POST" action="{% url 'admin_cancel_order' order.id %}" class="d-inline">
+                                {% csrf_token %}
+                                <button type="submit" class="btn btn-sm btn-danger">Cancel</button>
+                            </form>
+                        </td>
+                    </tr>
+                {% endfor %}
+            </tbody>
+        </table>
+    {% else %}
+        <div class="alert alert-info text-center">
+            <p>No orders found.</p>
+        </div>
+    {% endif %}
+</div>
+{% endblock %}

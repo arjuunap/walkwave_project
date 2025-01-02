@@ -1,0 +1,823 @@
+{% load static %}
+<!DOCTYPE html>
+<html lang="en">
+<head>
+	<title>Shoping Cart</title>
+	<meta charset="UTF-8">
+	<meta name="viewport" content="width=device-width, initial-scale=1">
+<!--===============================================================================================-->	
+	<link rel="icon" type="image/png" href="images/icons/favicon.png"/>
+<!--===============================================================================================-->
+	<link rel="stylesheet" type="text/css" href="{% static 'user_side/vendor/bootstrap/css/bootstrap.min.css' %}">
+<!--===============================================================================================-->
+	<link rel="stylesheet" type="text/css" href="{% static 'user_side/fonts/font-awesome-4.7.0/css/font-awesome.min.css' %}">
+<!--===============================================================================================-->
+	<link rel="stylesheet" type="text/css" href="{% static 'user_side/fonts/iconic/css/material-design-iconic-font.min.css' %}">
+<!--===============================================================================================-->
+	<link rel="stylesheet" type="text/css" href="{% static 'user_side/fonts/linearicons-v1.0.0/icon-font.min.css' %}">
+<!--===============================================================================================-->
+	<link rel="stylesheet" type="text/css" href="{% static 'user_side/vendor/animate/animate.css' %}">
+<!--===============================================================================================-->	
+	<link rel="stylesheet" type="text/css" href="{% static 'user_side/vendor/css-hamburgers/hamburgers.min.css' %}">
+<!--===============================================================================================-->
+	<link rel="stylesheet" type="text/css" href="{% static 'user_side/vendor/animsition/css/animsition.min.css' %}">
+<!--===============================================================================================-->
+	<link rel="stylesheet" type="text/css" href="{% static 'user_side/vendor/select2/select2.min.css' %}">
+<!--===============================================================================================-->
+	<link rel="stylesheet" type="text/css" href="{% static 'user_side/vendor/perfect-scrollbar/perfect-scrollbar.css' %}">
+<!--===============================================================================================-->
+	<link rel="stylesheet" type="text/css" href="{% static 'user_side/css/util.css' %}">
+	<link rel="stylesheet" type="text/css" href="{% static 'user_side/css/main.css' %}">
+<!--===============================================================================================-->
+
+<style>
+    .table-shopping-cart {
+		width: 100%;
+		border-collapse: collapse;
+	}
+	
+	.table-shopping-cart th,
+	.table-shopping-cart td {
+		padding: 15px;
+		text-align: left;
+		vertical-align: middle;
+		border-bottom: 1px solid #e0e0e0;
+	}
+	
+	.table-shopping-cart th {
+		background-color: #f8f9fa;
+		font-weight: bold;
+	}
+	
+	.how-itemcart1 img {
+		max-width: 80px;
+		height: auto;
+		border-radius: 4px;
+	}
+	
+	.wrap-num-product {
+		display: flex;
+		justify-content: center;
+		align-items: center;
+	}
+	
+	.quantity-control {
+		display: flex;
+		align-items: center;
+		
+		border-radius: 4px;
+		overflow: hidden;
+	}
+	
+	.quantity-control button {
+		background: #f8f9fa;
+		border: none;
+		padding: 8px 12px;
+		cursor: pointer;
+		transition: background-color 0.2s;
+	}
+	
+	.quantity-control button:hover {
+		background: #e9ecef;
+	}
+	
+	.quantity-control input {
+		width: 40px;
+		text-align: center;
+		border: none;
+		border-left: 1px solid #ddd;
+		border-right: 1px solid #ddd;
+		padding: 8px 0;
+	}
+	
+	.original-price {
+		text-decoration: line-through;
+		color: #999;
+		margin-right: 5px;
+	}
+	
+	.btn-danger {
+		background-color: #dc3545;
+		color: white;
+		border: none;
+		padding: 5px 10px;
+		cursor: pointer;
+		border-radius: 4px;
+		transition: background-color 0.3s;
+	}
+	
+	.btn-danger:hover {
+		background-color: #c82333;
+	}
+	
+	#cart-toast {
+		position: fixed;
+		bottom: 20px;
+		right: 20px;
+		background-color: #fff;
+		color: #333;
+		padding: 10px 20px;
+		border: 1px solid #ddd;
+		border-radius: 5px;
+		box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
+		font-size: 14px;
+		z-index: 1000;
+	}
+	.custom-swal-toast {
+		position: fixed !important; /* Fixed to viewport */
+		top: 10px !important; /* Place it above the header */
+		right: 20px !important; /* Align it to the right */
+		z-index: 100000000; /* Ensure it is above other elements */
+	}
+	
+	.messages {
+		list-style: none;
+		padding: 0;
+		margin: 10px 0;
+	}
+	.alert-success {
+		color: #155724;
+		background-color: #d4edda;
+		border-color: #c3e6cb;
+		padding: 10px;
+		border-radius: 5px;
+	}
+	.alert-error {
+		color: #721c24;
+		background-color: #f8d7da;
+		border-color: #f5c6cb;
+		padding: 10px;
+		border-radius: 5px;
+	}
+	.alert-warning {
+		color: #856404;
+		background-color: #fff3cd;
+		border-color: #ffeeba;
+		padding: 10px;
+		border-radius: 5px;
+	}
+	.alert-info {
+		color: #0c5460;
+		background-color: #d1ecf1;
+		border-color: #bee5eb;
+		padding: 10px;
+		border-radius: 5px;
+	}
+	
+</style>
+</head>
+<body class="animsition">
+	
+	<!-- Header -->
+	<header class="header-v4">
+		<!-- Header desktop -->
+		<div class="container-menu-desktop">
+			
+
+			<div class="wrap-menu-desktop how-shadow1">
+				<nav class="limiter-menu-desktop container">
+					
+					<!-- Logo desktop -->		
+					<a href="#" class="logo">
+						<img src="{% static 'user_side/logo/walkwave.png' %}" alt="IMG-LOGO">
+					</a>
+
+					<!-- Menu desktop -->
+					<div class="menu-desktop">
+						<ul class="main-menu">
+							<li>
+								<a href="{% url 'home' %}">Home</a>
+								
+							</li>
+
+							<li>
+								<a href="{% url 'product:product_shop' %}">Shop</a>
+							</li>
+
+							<li class="label1" data-label1="hot">
+								<a href="shoping-cart.html">Features</a>
+							</li>
+
+							<li>
+								<a href="blog.html">Blog</a>
+							</li>
+
+							<li>
+								<a href="about.html">About</a>
+							</li>
+
+							<li>
+								<a href="contact.html">Contact</a>
+							</li>
+						</ul>
+					</div>	
+
+					<!-- Icon header -->
+					<div class="wrap-icon-header flex-w flex-r-m">
+						<div class="icon-header-item cl2 hov-cl1 trans-04 p-l-22 p-r-11 js-show-modal-search">
+							<i class="zmdi zmdi-search"></i>
+						</div>
+
+						<div class="icon-header-item cl2 hov-cl1 trans-04 p-l-22 p-r-11 icon-header-noti js-show-cart" data-notify="2">
+							<i class="zmdi zmdi-shopping-cart"></i>
+						</div>
+
+						<a href="#" class="icon-header-item cl2 hov-cl1 trans-04 p-l-22 p-r-11 icon-header-noti" data-notify="0">
+							<i class="zmdi zmdi-favorite-outline"></i>
+						</a>
+
+						<div class="dropdown">
+							<a href="#" class="icon-header-item cl2 hov-cl1 trans-04 p-l-22 p-r-11 dropdown-toggle" id="profileDropdown" data-toggle="dropdown">
+								<i class="zmdi zmdi-account"></i>
+							</a>
+							<ul class="dropdown-menu" aria-labelledby="profileDropdown">
+								<li><a href="{% url 'user:user_profile' %}" class="dropdown-item">User Profile</a></li>
+								<li>
+									<form id="logoutForm" action="{% url 'logout' %}" method="POST" style="display: inline;">
+										{% csrf_token %}
+										<button type="submit" class="dropdown-item">Logout</button>
+									</form>
+								</li>
+							</ul>
+						</div>
+					</div>
+				</nav>
+			</div>	
+		</div>
+
+		<!-- Header Mobile -->
+		<div class="wrap-header-mobile">
+			<!-- Logo moblie -->		
+			<div class="logo-mobile">
+				<a href="index.html"><img src="{% static 'user_side/images/icons/logo-01.png' %}" alt="IMG-LOGO"></a>
+			</div>
+
+			<!-- Icon header -->
+			<div class="wrap-icon-header flex-w flex-r-m m-r-15">
+				<div class="icon-header-item cl2 hov-cl1 trans-04 p-r-11 js-show-modal-search">
+					<i class="zmdi zmdi-search"></i>
+				</div>
+
+				<div class="icon-header-item cl2 hov-cl1 trans-04 p-r-11 p-l-10 icon-header-noti js-show-cart" data-notify="2">
+					<i class="zmdi zmdi-shopping-cart"></i>
+				</div>
+
+				<a href="#" class="dis-block icon-header-item cl2 hov-cl1 trans-04 p-r-11 p-l-10 icon-header-noti" data-notify="0">
+					<i class="zmdi zmdi-favorite-outline"></i>
+				</a>
+			</div>
+
+			<!-- Button show menu -->
+			<div class="btn-show-menu-mobile hamburger hamburger--squeeze">
+				<span class="hamburger-box">
+					<span class="hamburger-inner"></span>
+				</span>
+			</div>
+		</div>
+
+
+		<!-- Menu Mobile -->
+		<div class="menu-mobile">
+			
+
+			<ul class="main-menu-m">
+				<li>
+					<a href="index.html">Home</a>
+					
+					<span class="arrow-main-menu-m">
+						<i class="fa fa-angle-right" aria-hidden="true"></i>
+					</span>
+				</li>
+
+				<li>
+					<a href="{% url 'product:product_shop' %}">Shop</a>
+				</li>
+
+				<li>
+					<a href="shoping-cart.html" class="label1 rs1" data-label1="hot">Features</a>
+				</li>
+
+				<li>
+					<a href="blog.html">Blog</a>
+				</li>
+
+				<li>
+					<a href="about.html">About</a>
+				</li>
+
+				<li>
+					<a href="contact.html">Contact</a>
+				</li>
+			</ul>
+		</div>
+
+		<!-- Modal Search -->
+		<div class="modal-search-header flex-c-m trans-04 js-hide-modal-search">
+			<div class="container-search-header">
+				<button class="flex-c-m btn-hide-modal-search trans-04 js-hide-modal-search">
+					<img src="{% static 'user_side/images/icons/icon-close2.png' %}" alt="CLOSE">
+				</button>
+
+				<form class="wrap-search-header flex-w p-l-15">
+					<button class="flex-c-m trans-04">
+						<i class="zmdi zmdi-search"></i>
+					</button>
+					<input class="plh3" type="text" name="search" placeholder="Search...">
+				</form>
+			</div>
+		</div>
+	</header>
+
+
+
+
+	<!-- breadcrumb -->
+	<div class="container">
+		<div class="bread-crumb flex-w p-l-25 p-r-15 p-t-30 p-lr-0-lg">
+			<a href="{% url 'home' %}" class="stext-109 cl8 hov-cl1 trans-04">
+				Home
+				<i class="fa fa-angle-right m-l-9 m-r-10" aria-hidden="true"></i>
+			</a>
+
+			<span class="stext-109 cl4">
+				Shoping Cart
+			</span>
+		</div>
+	</div>
+
+	{% if messages %}
+    <ul class="messages">
+        {% for message in messages %}
+            <li class="alert alert-{{ message.tags }}">{{ message }}</li>
+        {% endfor %}
+    </ul>
+    {% endif %}
+
+	
+		
+
+	<!-- Shoping Cart -->
+	<form class="bg0 p-t-75 p-b-85">
+		<div class="container">
+			<div class="row">
+				<div class="col-lg-10 col-xl-7 m-lr-auto m-b-50">
+					<div class="m-l-25 m-r--38 m-lr-0-xl">
+						<div class="wrap-table-shopping-cart">
+							<table class="table-shopping-cart">
+								<thead>
+									<tr>
+										<th>Product</th>
+										<th>Details</th>
+										<th>Price</th>
+										<th>Quantity</th>
+										<th>Total</th>
+										<th>Action</th>
+									</tr>
+								</thead>
+								<tbody>
+									{% if cart_items %}
+										{% for item in cart_items %}
+										<tr>
+											<td>
+												<div class="how-itemcart1">
+													<img src="{{ item.product.thumbnail.url }}" alt="{{ item.product.name }}">
+												</div>
+											</td>
+											<td>
+												<p>{{ item.product.name }}</p>
+												{% if item.variant.size %}
+													<p>Size: {{ item.variant.size }}</p>
+												{% endif %}
+											</td>
+											<td>
+												{% if item.discount > 0 %}
+													<span class="original-price">${{ item.price }}</span>
+												{% endif %}
+												${{ item.discounted_price|default:item.price }}
+											</td>
+											<td>
+												<div class="wrap-num-product">
+													<div class="quantity-control" data-item-id="{{ item.id }}" data-variant-id="{{ item.variant.id }}">														
+														<button class="minus-btn" type="button" aria-label="Decrease quantity">-</button>
+														<input type="number" class="quantity-input" value="{{ item.quantity }}" min="1" max="5" readonly>
+														<button class="plus-btn" type="button" aria-label="Increase quantity">+</button>
+													</div>
+												</div>
+											</td>
+											<td class="item-total-price" data-item-id="{{ item.id }}">${{ item.total_price }}</td>
+											<td>
+												<form method="post" action="{% url 'cart_remove_item' item.id %}">
+													{% csrf_token %}
+													<button type="submit" class="btn btn-danger">Remove</button>
+												</form>
+											</td>
+										</tr>
+										{% endfor %}
+									{% else %}
+										<tr>
+											<td colspan="6" style="text-align: center;">Your cart is empty.</td>
+										</tr>
+									{% endif %}
+								</tbody>
+							</table>
+							
+						</div>
+
+						<div class="flex-w flex-sb-m bor15 p-t-18 p-b-15 p-lr-40 p-lr-15-sm">
+							<div class="flex-w flex-m m-r-20 m-tb-5">
+								<input class="stext-104 cl2 plh4 size-117 bor13 p-lr-20 m-r-10 m-tb-5" type="text" name="coupon" placeholder="Coupon Code">
+									
+								<div class="flex-c-m stext-101 cl2 size-118 bg8 bor13 hov-btn3 p-lr-15 trans-04 pointer m-tb-5">
+									Apply coupon
+								</div>
+							</div>
+
+							<div class="flex-c-m stext-101 cl2 size-119 bg8 bor13 hov-btn3 p-lr-15 trans-04 pointer m-tb-10">
+								Update Cart
+							</div>
+						</div>
+					</div>
+				</div>
+
+				<div class="col-sm-10 col-lg-7 col-xl-5 m-lr-auto m-b-50">
+					<div class="bor10 p-lr-40 p-t-30 p-b-40 m-l-63 m-r-40 m-lr-0-xl p-lr-15-sm">
+						<h4 class="mtext-109 cl2 p-b-30">
+							Cart Summary
+						</h4>
+				
+						<!-- Items Count -->
+						<div class="flex-w flex-t bor12 p-b-13">
+							<div class="size-208">
+								<span class="stext-110 cl2">
+									Items:
+								</span>
+							</div>
+							<div class="size-209">
+								<span class="mtext-110 cl2">
+									{{ cart.items.count }} Items
+								</span>
+							</div>
+						</div>
+				
+						<!-- Total -->
+						<div class="flex-w flex-t p-t-27 p-b-33">
+							<div class="size-208">
+								<span class="mtext-101 cl2">
+									Total:
+								</span>
+							</div>
+							
+							<div class="size-209 p-t-1">
+								<span class="mtext-110 cl2 cart-total-price">
+									₹{{ cart.calculate_total_price }}
+								</span>
+							</div>
+							
+						</div>
+				
+						<!-- Checkout Button -->
+						 
+						<a href="{% url 'checkout_page' %}">
+							{% comment %} <button class="flex-c-m stext-101 cl0 size-116 bg3 bor14 hov-btn3 p-lr-15 trans-04 pointer"> {% endcomment %}
+								Proceed to Checkout
+							{% comment %} </button> {% endcomment %}
+						</a>
+						
+					</div>
+				</div>
+				
+			</div>
+		</div>
+	</form>
+		
+	
+		
+
+	<!-- Footer -->
+	<footer class="bg3 p-t-75 p-b-32">
+		<div class="container">
+			<div class="row">
+				<div class="col-sm-6 col-lg-3 p-b-50">
+					<h4 class="stext-301 cl0 p-b-30">
+						Categories
+					</h4>
+
+					<ul>
+						<li class="p-b-10">
+							<a href="#" class="stext-107 cl7 hov-cl1 trans-04">
+								Women
+							</a>
+						</li>
+
+						<li class="p-b-10">
+							<a href="#" class="stext-107 cl7 hov-cl1 trans-04">
+								Men
+							</a>
+						</li>
+
+						<li class="p-b-10">
+							<a href="#" class="stext-107 cl7 hov-cl1 trans-04">
+								Shoes
+							</a>
+						</li>
+
+						<li class="p-b-10">
+							<a href="#" class="stext-107 cl7 hov-cl1 trans-04">
+								Watches
+							</a>
+						</li>
+					</ul>
+				</div>
+
+				<div class="col-sm-6 col-lg-3 p-b-50">
+					<h4 class="stext-301 cl0 p-b-30">
+						Help
+					</h4>
+
+					<ul>
+						<li class="p-b-10">
+							<a href="#" class="stext-107 cl7 hov-cl1 trans-04">
+								Track Order
+							</a>
+						</li>
+
+						<li class="p-b-10">
+							<a href="#" class="stext-107 cl7 hov-cl1 trans-04">
+								Returns 
+							</a>
+						</li>
+
+						<li class="p-b-10">
+							<a href="#" class="stext-107 cl7 hov-cl1 trans-04">
+								Shipping
+							</a>
+						</li>
+
+						<li class="p-b-10">
+							<a href="#" class="stext-107 cl7 hov-cl1 trans-04">
+								FAQs
+							</a>
+						</li>
+					</ul>
+				</div>
+
+				<div class="col-sm-6 col-lg-3 p-b-50">
+					<h4 class="stext-301 cl0 p-b-30">
+						GET IN TOUCH
+					</h4>
+
+					<p class="stext-107 cl7 size-201">
+						Any questions? Let us know in store at 8th floor, 379 Hudson St, New York, NY 10018 or call us on (+1) 96 716 6879
+					</p>
+
+					<div class="p-t-27">
+						<a href="#" class="fs-18 cl7 hov-cl1 trans-04 m-r-16">
+							<i class="fa fa-facebook"></i>
+						</a>
+
+						<a href="#" class="fs-18 cl7 hov-cl1 trans-04 m-r-16">
+							<i class="fa fa-instagram"></i>
+						</a>
+
+						<a href="#" class="fs-18 cl7 hov-cl1 trans-04 m-r-16">
+							<i class="fa fa-pinterest-p"></i>
+						</a>
+					</div>
+				</div>
+
+				<div class="col-sm-6 col-lg-3 p-b-50">
+					<h4 class="stext-301 cl0 p-b-30">
+						Newsletter
+					</h4>
+
+					<form>
+						<div class="wrap-input1 w-full p-b-4">
+							<input class="input1 bg-none plh1 stext-107 cl7" type="text" name="email" placeholder="email@example.com">
+							<div class="focus-input1 trans-04"></div>
+						</div>
+
+						<div class="p-t-18">
+							<button class="flex-c-m stext-101 cl0 size-103 bg1 bor1 hov-btn2 p-lr-15 trans-04">
+								Subscribe
+							</button>
+						</div>
+					</form>
+				</div>
+			</div>
+
+			<div class="p-t-40">
+				<div class="flex-c-m flex-w p-b-18">
+					<a href="#" class="m-all-1">
+						<img src="{% static 'user_side/images/icons/icon-pay-01.png' %}" alt="ICON-PAY">
+					</a>
+
+					<a href="#" class="m-all-1">
+						<img src="{% static 'user_side/images/icons/icon-pay-02.png' %}" alt="ICON-PAY">
+					</a>
+
+					<a href="#" class="m-all-1">
+						<img src="{% static 'user_side/images/icons/icon-pay-03.png' %}" alt="ICON-PAY">
+					</a>
+
+					<a href="#" class="m-all-1">
+						<img src="{% static 'user_side/images/icons/icon-pay-04.png' %}" alt="ICON-PAY">
+					</a>
+
+					<a href="#" class="m-all-1">
+						<img src="{% static 'user_side/images/icons/icon-pay-05.png' %}" alt="ICON-PAY">
+					</a>
+				</div>
+
+				<p class="stext-107 cl6 txt-center">
+					<!-- Link back to Colorlib can't be removed. Template is licensed under CC BY 3.0. -->
+Copyright &copy;<script>document.write(new Date().getFullYear());</script> All rights reserved | Made with <i class="fa fa-heart-o" aria-hidden="true"></i> by <a href="https://colorlib.com" target="_blank">Colorlib</a> &amp; distributed by <a href="https://themewagon.com" target="_blank">ThemeWagon</a>
+<!-- Link back to Colorlib can't be removed. Template is licensed under CC BY 3.0. -->
+
+				</p>
+			</div>
+		</div>
+	</footer>
+
+
+	<!-- Back to top -->
+	<div class="btn-back-to-top" id="myBtn">
+		<span class="symbol-btn-back-to-top">
+			<i class="zmdi zmdi-chevron-up"></i>
+		</span>
+	</div>
+
+<!--===============================================================================================-->	
+	<script src="{% static 'user_side/vendor/jquery/jquery-3.2.1.min.js' %}"></script>
+<!--===============================================================================================-->
+	<script src="{% static 'user_side/vendor/animsition/js/animsition.min.js' %}"></script>
+<!--===============================================================================================-->
+	<script src="{% static 'user_side/vendor/bootstrap/js/popper.js' %}"></script>
+	<script src="{% static 'user_side/vendor/bootstrap/js/bootstrap.min.js' %}"></script>
+<!--===============================================================================================-->
+	<script src="{% static 'user_side/vendor/select2/select2.min.js' %}"></script>
+	<script>
+		$(".js-select2").each(function(){
+			$(this).select2({
+				minimumResultsForSearch: 20,
+				dropdownParent: $(this).next('.dropDownSelect2')
+			});
+		})
+	</script>
+<!--===============================================================================================-->
+	<script src="{% static 'user_side/vendor/MagnificPopup/jquery.magnific-popup.min.js' %}"></script>
+<!--===============================================================================================-->
+	<script src="{% static 'user_side/vendor/perfect-scrollbar/perfect-scrollbar.min.js' %}"></script>
+	<script>
+		$('.js-pscroll').each(function(){
+			$(this).css('position','relative');
+			$(this).css('overflow','hidden');
+			var ps = new PerfectScrollbar(this, {
+				wheelSpeed: 1,
+				scrollingThreshold: 1000,
+				wheelPropagation: false,
+			});
+
+			$(window).on('resize', function(){
+				ps.update();
+			})
+		});
+	</script>
+<!--===============================================================================================-->
+	<script src="{% static 'user_side/js/main.js' %}"></script>
+
+	<script src="https://cdn.jsdelivr.net/npm/sweetalert2@11"></script>
+	<script>
+		// Function to handle quantity updates with AJAX
+		function updateQuantity(button, change) {
+			const container = button.closest('.wrap-num-product');
+			const input = container.querySelector('.quantity-input');
+			const currentValue = parseInt(input.value);
+			const newValue = currentValue + change;
+	
+			// Ensure new quantity is within bounds
+			if (newValue < 1 || newValue > 5) {
+				if (newValue > 5) {
+					Swal.fire({
+						icon: 'warning',
+						title: 'Quantity Limit Exceeded',
+						text: 'You can only add a maximum of 5 items.',
+						confirmButtonText: 'Okay',
+						allowOutsideClick: false,
+						allowEscapeKey: true,
+					});
+				}
+				return;
+			}
+	
+			input.value = newValue;
+	
+			// Get product and variant IDs
+			const productId = container.querySelector('.quantity-control').getAttribute('data-item-id');
+	
+			// AJAX Request to update the quantity and fetch updated prices
+			fetch('/cart/update-cart-quantity/', {
+				method: 'POST',
+				headers: {
+					'Content-Type': 'application/json',
+					'X-CSRFToken': getCookie('csrftoken'),
+				},
+				body: JSON.stringify({
+					item_id: productId,
+					quantity: newValue,
+				}),
+			})
+			.then(response => response.json())
+			.then(data => {
+				console.log('Cart update response:', data);
+				if (data.success) {
+					// Update the total price for the item
+					const totalPriceCell = document.querySelector(`.item-total-price[data-item-id="${productId}"]`);
+					if (totalPriceCell) {
+						totalPriceCell.textContent = `₹${data.item_total_price}`;
+					}
+	
+					// Update the cart total
+					const cartTotal = document.querySelector('.cart-total-price');
+					if (cartTotal && data.cart_total_price) {
+						cartTotal.textContent = `₹${data.cart_total_price}`;
+					}
+	
+					// Update the total item count (optional)
+					const totalItems = document.querySelector('.cart-total-items');
+					if (totalItems && data.total_items) {
+						totalItems.textContent = data.total_items;
+					}
+				} else {
+					Swal.fire({
+						icon: 'error',
+						title: 'Update Failed',
+						text: 'Error updating quantity',
+					});
+				}
+			})
+			.catch(error => {
+				console.error('Error:', error);
+			});
+		}
+	
+		// Fetch initial total prices for each item on page load
+		document.addEventListener('DOMContentLoaded', () => {
+			document.querySelectorAll('.item-total-price').forEach(priceCell => {
+				const productId = priceCell.getAttribute('data-item-id');
+	
+				fetch(`/cart/item-total/${productId}/`)
+					.then(response => response.json())
+					.then(data => {
+						console.log('Initial item price:', data);
+						if (data.success) {
+							priceCell.textContent = `₹${data.total_price}`;
+						}
+					})
+					.catch(error => {
+						console.error(`Error fetching initial price for item ${productId}:`, error);
+					});
+			});
+		});
+	
+		// Helper function to get CSRF token
+		function getCookie(name) {
+			let cookieValue = null;
+			if (document.cookie && document.cookie !== '') {
+				const cookies = document.cookie.split(';');
+				for (let i = 0; i < cookies.length; i++) {
+					const cookie = cookies[i].trim();
+					if (cookie.substring(0, name.length + 1) === (name + '=')) {
+						cookieValue = decodeURIComponent(cookie.substring(name.length + 1));
+						break;
+					}
+				}
+			}
+			return cookieValue;
+		}
+	
+		// Add event listeners for quantity controls
+		document.addEventListener('DOMContentLoaded', function() {
+			const quantityControls = document.querySelectorAll('.quantity-control');
+	
+			quantityControls.forEach(control => {
+				const minusBtn = control.querySelector('.minus-btn');
+				const plusBtn = control.querySelector('.plus-btn');
+	
+				minusBtn.addEventListener('click', function() {
+					updateQuantity(this, -1);
+				});
+	
+				plusBtn.addEventListener('click', function() {
+					updateQuantity(this, 1);
+				});
+			});
+		});
+	</script>
+	
+
+
+	
+
+
+</body>
+</html>

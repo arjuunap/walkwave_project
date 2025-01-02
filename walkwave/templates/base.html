@@ -97,7 +97,7 @@
                             </a>
                         </li>
                         <li class="nav-item">
-                            <a class="nav-link {% if request.resolver_match.url_name == 'orders' %}active{% endif %}" href="#">
+                            <a class="nav-link {% if request.resolver_match.url_name == 'admin_order_list' %}active{% endif %}" href="{% url 'admin_order_list' %}">
                                 <i class="fas fa-file-alt"></i> Orders
                             </a>
                         </li>

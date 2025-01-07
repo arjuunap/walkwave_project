@@ -550,30 +550,3 @@ def edit_product_images(request, id):
 
 
 
-from .models import Product  
-from django.http import JsonResponse
-
-def product_filter(request):
-    products = Product.objects.all()
-
-    # Get sort parameter
-    sort_option = request.GET.get('sort', None)
-
-    # Apply sorting logic
-    if sort_option == 'featured':
-        products = products.order_by('-featured')  # Replace with your field
-    elif sort_option == 'popularity':
-        products = products.order_by('-popularity')  # Replace with your field
-    elif sort_option == 'price_low_to_high':
-        products = products.order_by('price')
-    elif sort_option == 'price_high_to_low':
-        products = products.order_by('-price')
-    elif sort_option == 'new_arrivals':
-        products = products.order_by('-created_at')
-    elif sort_option == 'a_to_z':
-        products = products.order_by('name')
-    elif sort_option == 'z_to_a':
-        products = products.order_by('-name')
-
-
-    return JsonResponse({'products': products}) 

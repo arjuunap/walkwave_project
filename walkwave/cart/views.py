@@ -11,6 +11,8 @@ from django.views.decorators.csrf import csrf_exempt
 from product.models import Product, ProductVariant
 import json
 from order.models import Order, OrderItem, PaymentMethod
+from django.db import transaction
+
 # Create your views here.
 
 
@@ -25,7 +27,6 @@ def cart_page(request):
     return render(request, 'user_side/shoping-cart.html', context)
 
 
-
 @csrf_exempt
 @login_required
 def add_to_cart(request):
@@ -35,48 +36,45 @@ def add_to_cart(request):
             variant_id = data.get('variant_id')
             quantity = int(data.get('quantity', 1))
 
-            
             if quantity < 1:
                 quantity = 1
 
-            
             variant = get_object_or_404(ProductVariant, id=variant_id)
 
-            
             if variant.variant_stock < quantity:
                 return JsonResponse({'success': False, 'message': 'Not enough stock available.'}, status=400)
 
-            
-            cart, created = Cart.objects.get_or_create(user=request.user)
+            with transaction.atomic():
+                cart, created = Cart.objects.get_or_create(user=request.user)
 
-            cart_item, created = CartItem.objects.get_or_create(
-                cart=cart,
-                product=variant.product,
-                variant=variant,
-                defaults={
-                    'quantity': 0,
-                    'price': variant.product.offer_price or variant.product.price,  
-                }
-            )
+                cart_item, created = CartItem.objects.get_or_create(
+                    cart=cart,
+                    product=variant.product,
+                    variant=variant,
+                    defaults={
+                        'quantity': 0,
+                        'price': variant.product.offer_price or variant.product.price,
+                    }
+                )
 
-            
-            if not created:
-                cart_item.quantity += quantity
-            else:
-                
-                cart_item.quantity = max(1, quantity)
+                if not created:
+                    cart_item.quantity += quantity
+                else:
+                    cart_item.quantity = max(1, quantity)
 
-            
-            if cart_item.quantity > variant.variant_stock:
-                return JsonResponse({'success': False, 'message': 'Quantity exceeds available stock.'}, status=400)
+                if cart_item.quantity > variant.variant_stock:
+                    return JsonResponse({'success': False, 'message': 'Quantity exceeds available stock.'}, status=400)
 
-            
-            cart_item.save()
-            
+                if created:
+                    variant.variant_stock -= cart_item.quantity
+                else:
+                    variant.variant_stock -= quantity
 
-            
-            cart.total_price = cart.calculate_total_price()
-            cart.save()
+                variant.save()
+                cart_item.save()
+
+                cart.total_price = cart.calculate_total_price()
+                cart.save()
 
             return JsonResponse({'success': True, 'message': 'Item added to cart.', 'cart_count': cart.items.count()})
 
@@ -90,17 +88,30 @@ def add_to_cart(request):
 
 @login_required
 def cart_remove_item(request, item_id):
-    cart_item = get_object_or_404(CartItem, id=item_id, cart__user=request.user)
-
     if request.method == "POST":
-        cart_item.delete()
-        messages.success(request, "Item removed from the cart successfully.")
+        cart_item = get_object_or_404(CartItem, id=item_id, cart__user=request.user)
+        print(f' thi {cart_item}')
+
+        try:
+            with transaction.atomic():
+                if cart_item.variant:
+                    cart_item.variant.variant_stock += cart_item.quantity
+                    cart_item.variant.save()
+
+                cart_item.delete()
+
+                messages.success(request, "Item removed from the cart successfully.")
+        except Exception :
+            messages.error(request, "Error")
+
         return redirect('cart_page')
+    messages.error(request, "Invalid request method.")
+    return redirect('cart_page')
+
     
 
 
-from django.http import JsonResponse
-import json
+
 
 from decimal import Decimal
 def update_cart_quantity(request):
@@ -272,11 +283,35 @@ def order_confirmed(request, id):
     return render(request, 'user_side/order_confirm.html', {'order': order})
 
 
-#admin side
-@login_required
 def user_orders(request):
     orders = Order.objects.filter(user=request.user).prefetch_related('items__product', 'address')
-
+    print(orders) 
     return render(request, 'user_side/user_orders.html', {
         'orders': orders,
     })
+
+
+@login_required
+def cancel_order(request,id):
+    order = get_object_or_404( Order , id=id , user= request.user)
+
+    if order .status not in ['Cancelled' , 'Delivered']:
+        order.status = 'Cancelled'
+        order.save()
+        messages.success(request , 'Your order had been canceled successfully canceled')
+    else:
+        messages.warning(request, 'this orderc cannot be canceled')
+    
+    return redirect('user_orders')
+
+
+@login_required
+def order_details(request,id):
+    order = get_object_or_404(Order, id =id ,user =request.user)
+    payment_method = PaymentMethod.objects.filter(user=request.user).first()
+    return render (request, 'user_side/order_details.html',{'order':order, 'payment_method': payment_method})
+
+
+
+    
+

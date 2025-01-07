@@ -1,7 +1,6 @@
 {% extends "base_user.html" %}
 {% load static %}
 
-
 {% block title %}Checkout{% endblock %}
 
 {% block style %}
@@ -12,80 +11,116 @@
         }
         .card {
             border: none;
+            margin-bottom: 1rem;
         }
         .card-header {
-            font-size: 1.2rem;
+            font-size: 1.1rem;
             font-weight: bold;
         }
         .badge {
-            font-size: 0.9rem;
+            font-size: 0.8rem;
         }
         .list-group-item {
-            font-size: 0.95rem;
+            font-size: 0.9rem;
         }
         .alert-info {
             background-color: #eaf7ff;
             color: #084298;
         }
+        @media (max-width: 767px) {
+            .card-body {
+                padding: 1rem;
+            }
+            .list-group-item {
+                padding: 0.5rem;
+            }
+        }
     </style>
-
 {% endblock %}
 
 {% block body %}
-<body>
-    <div class="container py-5">
-        <h2 class="mb-4 text-center">Your Orders</h2>
+<div class="container py-4">
+    <h2 class="mb-4 text-center">Your Orders</h2>
 
-        {% if orders %}
-            <div class="row">
-                {% for order in orders %}
-                    <div class="col-md-6 mb-4">
-                        <div class="card shadow-sm">
-                            <div class="card-header bg-primary text-white">
-                                <h5 class="mb-0">Order ID: {{ order.order_id }}</h5>
-                            </div>
-                            <div class="card-body">
-                                <p><strong>Order Date:</strong> {{ order.ordered_at|date:"d M Y, H:i" }}</p>
-                                <p><strong>Status:</strong> 
-                                    <span class="badge 
-                                        {% if order.status == 'Delivered' %}bg-success
-                                        {% elif order.status == 'Pending' %}bg-warning
-                                        {% elif order.status == 'Cancelled' %}bg-danger
-                                        {% else %}bg-info{% endif %}">
-                                        {{ order.status }}
-                                    </span>
-                                </p>
-                                <p><strong>Delivery Address:</strong> {{ order.address }}</p>
-                                <p><strong>Total Price:</strong> ₹{{ order.total_price }}</p>
+    {% if orders %}
+        <div class="row row-cols-1 row-cols-md-2 g-4">
+            {% for order in orders %}
+                <div class="col">
+                    <div class="card h-100 shadow-sm">
+                        <div class="card-header bg-primary text-white">
+                            <h5 class="mb-0 fs-6">Order ID: {{ order.order_id }}</h5>
+                        </div>
+                        <div class="card-body">
+                            <p class="mb-1"><strong>Order Date:</strong> {{ order.ordered_at|date:"d M Y, H:i" }}</p>
+                            <p class="mb-1"><strong>Status:</strong> 
+                                <span class="badge 
+                                    {% if order.status == 'Delivered' %}bg-success
+                                    {% elif order.status == 'Pending' %}bg-warning
+                                    {% elif order.status == 'Cancelled' %}bg-danger
+                                    {% else %}bg-info{% endif %}">
+                                    {{ order.status }}
+                                </span>
+                            </p>
+                            <p class="mb-1"><strong>Delivery Address:</strong> {{ order.address }}</p>
+                            <p class="mb-3"><strong>Total Price:</strong> ₹{{ order.total_price }}</p>
 
-                                <h6 class="mt-4">Items:</h6>
-                                <ul class="list-group">
-                                    {% for item in order.items.all %}
-                                        <li class="list-group-item d-flex justify-content-between align-items-center">
-                                            {{ item.product.name }} 
-                                            <span>
+                            <h6 class="mt-3 mb-2">Items:</h6>
+                            <ul class="list-group list-group-flush">
+                                {% for item in order.items.all %}
+                                    <li class="list-group-item px-0">
+                                        <div class="d-flex justify-content-between align-items-center flex-wrap">
+                                            <span class="me-2">{{ item.product.name }}</span>
+                                            <span class="text-end">
                                                 Qty: {{ item.quantity }} | ₹{{ item.price }} 
-                                                <small class="text-danger">(Discount: ₹{{ item.discount }})</small>
+                                                <small class="text-danger d-block">(Discount: ₹{{ item.discount }})</small>
                                             </span>
-                                        </li>
-                                    {% endfor %}
-                                </ul>
-                            </div>
-                            <div class="card-footer text-muted text-center">
-                                Ordered on {{ order.ordered_at|date:"d M Y" }}
+                                        </div>
+                                    </li>
+                                {% endfor %}
+                            </ul>
+                        </div>
+                        <div class="card-footer text-muted text-center">
+                            <small>Ordered on {{ order.ordered_at|date:"d M Y" }}</small>
+                            <div class="mt-2">
+                                {% if order.status != 'Cancelled' and order.status != 'Delivered' %}
+                                    <form method="POST" action="{% url 'cancel_order' order.id %}" class="d-inline-block cancel-order-form">
+                                        {% csrf_token %}
+                                        <button type="button" class="btn btn-danger btn-sm me-2 mb-2 cancel-button" data-order-id="{{ order.id }}">Cancel Order</button>
+                                    </form>
+                                {% endif %}
+                                <a href="{% url 'order_details' order.id %}" class="btn btn-info btn-sm mb-2">View Order Details</a>
                             </div>
                         </div>
                     </div>
-                {% endfor %}
-            </div>
-        {% else %}
-            <div class="alert alert-info text-center">
-                <p>You have no orders yet.</p>
-            </div>
-        {% endif %}
-    </div>
+                </div>
+            {% endfor %}
+        </div>
+    {% else %}
+        <div class="alert alert-info text-center">
+            <p class="mb-0">You have no orders yet.</p>
+        </div>
+    {% endif %}
+</div>
 
-    <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0-alpha3/dist/js/bootstrap.bundle.min.js"></script>
-</body>
-</html>
+<script src="https://cdn.jsdelivr.net/npm/sweetalert2@11"></script>
+<script>
+    document.querySelectorAll('.cancel-button').forEach(button => {
+        button.addEventListener('click', function () {
+            const form = this.closest('.cancel-order-form');
+            Swal.fire({
+                title: 'Are you sure?',
+                text: "You won't be able to revert this!",
+                icon: 'warning',
+                showCancelButton: true,
+                confirmButtonColor: '#d33',
+                cancelButtonColor: '#3085d6',
+                confirmButtonText: 'Yes, cancel it!'
+            }).then((result) => {
+                if (result.isConfirmed) {
+                    form.submit(); 
+                }
+            });
+        });
+    });
+</script>
 {% endblock %}

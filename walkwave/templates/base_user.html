@@ -112,32 +112,32 @@
                     <li class="nav-item">
                         <a class="nav-link" href="{% url 'home' %}">Home</a>
                     </li>
-                    {% comment %} <li class="nav-item">
-                        <a class="nav-link" href="{% url 'product_listing' %}">Brand</a>
+                  <li class="nav-item">
+                        <a class="nav-link" href="{% url 'product:product_shop' %}">Brand</a>
                     </li>
                     <li class="nav-item">
-                        <a class="nav-link" href="{% url 'product_listing' %}">Category</a>
+                        <a class="nav-link" href="{% url 'product:product_shop' %}">Category</a>
                     </li>
                     <li class="nav-item">
-                        <a class="nav-link" href="{% url 'product_listing' %}">Shop</a>
+                        <a class="nav-link" href="{% url 'product:product_shop' %}">Shop</a>
                     </li>
                     <li class="nav-item">
-                        <a class="nav-link" href="{% url 'about' %}">About Us</a>
+                        <a class="nav-link" href="">About Us</a>
                     </li>
                     <li class="nav-item">
-                        <a class="nav-link" href="{% url 'contact_us' %}">Contact Us</a>
-                    </li> {% endcomment %}
+                        <a class="nav-link" href="">Contact Us</a>
+                    </li> 
                 </ul>
-                {% comment %} <div class="d-flex align-items-center mt-3 mt-lg-0">
-                    <a href="{% url 'view_cart' %}" class="btn btn-outline-dark me-2">
+                <div class="d-flex align-items-center mt-3 mt-lg-0">
+                    <a href="{% url 'cart_page' %}" class="btn btn-outline-dark me-2">
                         <i class="fas fa-shopping-cart"></i>
                     </a>
-                    <a href="{% url 'profile' %}" class="btn btn-outline-dark me-2">
+                    <a href="{% url 'user:user_profile' %}" class="btn btn-outline-dark me-2">
                         <i class="fas fa-user"></i>
                     </a>
-                    <a href="{% url 'logout_account' %}" class="btn btn-outline-dark">
+                    <a href="{% url 'logout' %}" class="btn btn-outline-dark">
                         <i class="fas fa-sign-out-alt"></i> Logout
-                    </a> {% endcomment %}
+                    </a>
                 </div>
             </div>
         </div>

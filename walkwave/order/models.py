@@ -9,7 +9,6 @@ import uuid
 class Order(models.Model):
     user = models.ForeignKey(User, on_delete=models.CASCADE, related_name='orders')
     order_id = models.UUIDField(default=uuid.uuid4, blank=True, null=True)
-    # cart = models.OneToOneField(Cart,  related_name='order')
     address = models.ForeignKey(Address, on_delete=models.SET_NULL, null=True, blank=True)  # Newly added field
     total_price = models.DecimalField(max_digits=10, decimal_places=2)
     delivery_charge = models.DecimalField(max_digits=10, decimal_places=2, default=0.00)

@@ -439,74 +439,79 @@
 				</div>
 				
 				
-				
 				<!-- Product Info Section -->
-				<div class="col-md-6 col-lg-5 p-b-30">
-					<div class="p-r-50 p-t-5 p-lr-0-lg">
-						<h4 class="mtext-105 js-name-detail p-b-14 product-name">
-							{{ product.name }}
-						</h4>
-						<p>{{product.product_brand.name}}</p>
-						
-						<h1 class="mtext-108 js-name-detail p-b-14 product-category">
-							{{ product.product_category.name }}
-						</h1>
-						<div class="product-prices">
-							
-							<span class="original-price">
-								{{ product.price }}
-							</span>
-						</div>
-						
-						
-						
+<div class="col-md-6 col-lg-5 p-b-30">
+    <div class="p-r-50 p-t-5 p-lr-0-lg">
+        <h4 class="mtext-105 js-name-detail p-b-14 product-name">
+            {{ product.name }}
+        </h4>
+        <p>{{ product.product_brand.name }}</p>
+        
+        <h1 class="mtext-108 js-name-detail p-b-14 product-category">
+            {{ product.product_category.name }}
+        </h1>
+        <div class="product-prices">
+            <span class="original-price">
+                ₹{{ product.price }}
+            </span>
+        </div>
 
-						<div class="product-logo p-t-20">
-							<img src="{% static 'user_side/logo/rating star.webp' %}" alt="Product Logo" style="width:100px; height: auto; display: inline;">
-							(45 reviews)
-						</div>
-						
+        <div class="product-logo p-t-20">
+            <img src="{% static 'user_side/logo/rating star.webp' %}" alt="Product Logo" style="width:100px; height: auto; display: inline;">
+            (45 reviews)
+        </div>
 
-					
-						
-	
-						<p class="stext-102 cl3 p-t-23">
-							{{ product.product_description }}
-						</p>
-						
-						<!-- Product Options -->
-						<div class="p-t-33">
-							<div class="flex-w flex-r-m p-b-10">
-								<div class="size-203 flex-c-m respon6">
-									Size
-								</div>
-						
-								<div class="size-204 respon6-next">
-									<!-- Size selection as boxes -->
-									<div id="size-selector" class="size-box-container">
-										{% for variant in available_variants %}
-											<button 
-												class="size-box" 
-												data-variant-id="{{ variant.id }}" 
-												data-stock="{{ variant.variant_stock }}">
-												{{ variant.size }}
-											</button>
-										{% endfor %}
-									</div>
-								</div>
-								<p id="stock-info"></p>
-							</div>
-						
-							<div class="flex-w flex-r-m p-b-10">
-								<div class="size-204 flex-w flex-m respon6-next">
-									<button 
-										id="add-to-cart-btn" 
-										class="flex-c-m stext-101 cl0 size-101 bg1 bor1 hov-btn1 p-lr-15 trans-04 js-addcart-detail">
-										Add to Cart
-									</button>
-								</div>
-							</div>  
-						</div>
+        <p class="stext-102 cl3 p-t-23">
+            {{ product.product_description }}
+        </p>
+
+        <!-- Product Options -->
+        <div class="p-t-33">
+            <div class="flex-w flex-r-m p-b-10">
+                <div class="size-203 flex-c-m respon6">
+                    Size
+                </div>
+
+                <div class="size-204 respon6-next">
+                    <!-- Size selection as boxes -->
+                    <div id="size-selector" class="size-box-container">
+                        {% if available_variants %}
+                            {% for variant in available_variants %}
+                                <button 
+                                    class="size-box" 
+                                    data-variant-id="{{ variant.id }}" 
+                                    data-stock="{{ variant.variant_stock }}">
+                                    {{ variant.size }}
+                                </button>
+                            {% endfor %}
+                        {% else %}
+                            <p class="text-danger">Out of Stock</p>
+                        {% endif %}
+                    </div>
+                </div>
+                <p id="stock-info" class="text-danger"></p>
+            </div>
+
+            <div class="flex-w flex-r-m p-b-10">
+                <div class="size-204 flex-w flex-m respon6-next">
+                    <button 
+                        id="add-to-cart-btn" 
+                        class="flex-c-m stext-101 cl0 size-101 bg1 bor1 hov-btn1 p-lr-15 trans-04 js-addcart-detail"
+                        {% if not available_variants %}
+                            disabled
+                        {% endif %}>
+                        {% if not available_variants %}
+                            Out of Stock
+                        {% else %}
+                            Add to Cart
+                        {% endif %}
+                    </button>
+                </div>
+            </div>  
+        </div>
+    </div>
+</div>
+
 						
 
 	
@@ -842,6 +847,8 @@ Copyright &copy;<script>document.write(new Date().getFullYear());</script> All r
 	</script>
 <!--===============================================================================================-->
 	<script src="{% static 'user_side/js/main.js' %}"></script>
+	<script src="https://cdn.jsdelivr.net/npm/sweetalert2@11"></script>
+
 
 
 	<script>
@@ -918,10 +925,14 @@ Copyright &copy;<script>document.write(new Date().getFullYear());</script> All r
 	
 		addToCartButton.addEventListener('click', function () {
 			if (!selectedVariantId) {
-				alert('Please select a size before adding to the cart.');
+				Swal.fire({
+					icon: 'warning',
+					title: 'Size Missing!',
+					text: 'Please select a size before adding to the cart.',
+				});
 				return;
 			}
-	
+		
 			// Send Add to Cart request
 			fetch('/cart/add-to-cart/', {
 				method: 'POST',
@@ -937,14 +948,30 @@ Copyright &copy;<script>document.write(new Date().getFullYear());</script> All r
 				.then(response => response.json())
 				.then(data => {
 					if (data.success) {
-						alert('Product added to cart!');
+						Swal.fire({
+							icon: 'success',
+							title: 'Success!',
+							text: 'Product added to cart!',
+						});
 						updateCartUI(data.cart_count);
 					} else {
-						alert(data.message || 'Failed to add to cart.');
+						Swal.fire({
+							icon: 'error',
+							title: 'Oops...',
+							text: data.message || 'Failed to add to cart.',
+						});
 					}
 				})
-				.catch(error => console.error('Error:', error));
+				.catch(error => {
+					console.error('Error:', error);
+					Swal.fire({
+						icon: 'error',
+						title: 'Error!',
+						text: 'An unexpected error occurred.',
+					});
+				});
 		});
+		
 	
 		// Helper function to get CSRF token
 		function getCookie(name) {

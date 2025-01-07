@@ -357,3 +357,111 @@ def reset_password(request):
             return redirect('user:forgot_password')
 
     return render(request, 'user_side/password_reset_page.html')
+
+
+from django.http import JsonResponse
+import re
+from django.urls import reverse
+
+#checkout page
+@login_required
+def add_or_edit_address(request):
+    if request.method == "POST":
+
+        address_id = request.POST.get("address_id")
+        label = request.POST.get("label", "").strip()
+        address_text = request.POST.get("address", "").strip()
+        city = request.POST.get("city", "").strip()
+        state = request.POST.get("state", "").strip()
+        pin_code = request.POST.get("pin_code", "").strip()
+        phone_number = request.POST.get("phone_number", "").strip()
+        set_as_default = request.POST.get("default_address") == "on"
+       
+        errors = {}
+
+        
+        if not label:
+            errors['label'] = "Label is required"
+       
+
+        
+        if not address_text:
+            errors['address'] = "Address is required"
+        elif len(address_text) > 200:  
+            errors['address'] = "Address must be less than 200 characters"
+
+        # Validate city
+        if not city:
+            errors['city'] = "City is required"
+        elif len(city) > 100:
+            errors['city'] = "City must be less than 100 characters"
+
+        # Validate state
+        if not state:
+            errors['state'] = "State is required"
+        elif len(state) > 100: 
+            errors['state'] = "State must be less than 100 characters"
+
+       
+        if not pin_code:
+            errors['pin_code'] = "PIN code is required"
+        elif not re.match(r'^\d{6}$', pin_code): 
+            errors['pin_code'] = "Please enter a valid 6-digit PIN code"
+
+        
+        if not phone_number:
+            errors['phone_number'] = "Phone number is required"
+        elif not re.match(r'^\d{10}$', phone_number):  
+            errors['phone_number'] = "Please enter a valid 10-digit phone number"
+
+        
+        if errors:
+            return JsonResponse({
+                'status': 'error',
+                'errors': errors
+            })
+
+        try:
+            if address_id:
+                address = get_object_or_404(Address, id=address_id, user=request.user)
+                address.label = label
+                address.address = address_text
+                address.city = city
+                address.state = state
+                address.pin_code = pin_code
+                address.phone_number = phone_number
+                address.default_address = set_as_default
+                address.save()
+                message = "Address updated successfully!"
+            else:
+                
+                new_address = Address.objects.create(
+                    user=request.user,
+                    label=label,
+                    address=address_text,
+                    city=city,
+                    state=state,
+                    pin_code=pin_code,
+                    phone_number=phone_number,
+                    default_address=set_as_default,
+                )
+                address = new_address
+                message = "Address added successfully!"
+
+          
+            if set_as_default:
+                Address.objects.filter(user=request.user).exclude(id=address.id).update(default_address=False)
+
+            return JsonResponse({
+                'status': 'success',
+                'message': message,
+                'redirect_url': reverse('checkout_page')
+            })
+
+        except Exception as e:
+            return JsonResponse({
+                'status': 'error',
+                'errors': {'general': str(e)}
+            })
+
+    return redirect("checkout_page")

@@ -100,25 +100,25 @@
                 <div class="card-body">
                     <h5 class="card-title mb-4">Hi, {{ user.first_name }}</h5>
                     <div class="list-group list-group-flush">
-                        <a href="" class="list-group-item list-group-item-action">
+                        <a href="{% url 'user:user_profile' %}" class="list-group-item list-group-item-action active">
                             <i class="fas fa-user me-2"></i> My Profile
                         </a>
-                        <a href="" class="list-group-item list-group-item-action">
+                        <a href="{% url 'user_orders' %}" class="list-group-item list-group-item-action">
                             <i class="fas fa-box me-2"></i> My Orders
                         </a>
                         <a href="" class="list-group-item list-group-item-action">
                             <i class="fas fa-wallet me-2"></i> Wallet
                         </a>
-                        <a href="" class="list-group-item list-group-item-action">
+                        <a href="{% url 'cart_page' %}" class="list-group-item list-group-item-action">
                             <i class="fas fa-shopping-cart me-2"></i> Cart
                         </a>
                         <a href="" class="list-group-item list-group-item-action">
                             <i class="fas fa-heart me-2"></i> Wishlist
                         </a>
-                        <a href="" class="list-group-item list-group-item-action active">
+                        <a href="{% url 'user:user_address' %}" class="list-group-item list-group-item-action">
                             <i class="fas fa-map-marker-alt me-2"></i> Manage Address
                         </a>
-                        <a href="" class="list-group-item list-group-item-action text-danger">
+                        <a href="{% url 'logout' %}" class="list-group-item list-group-item-action text-danger">
                             <i class="fas fa-sign-out-alt me-2"></i> Log out
                         </a>
                     </div>
@@ -162,8 +162,12 @@
                                 <a href="{% url 'user:edit_address' address.id %}" class="text-primary">Edit</a>
                                 {% if not address.default_address %}
                                 <a href="{% url 'user:set_default_address' address.id %}" class="text-success ms-3">Set as Default</a>
-                                <a href="{% url 'user:delete_address' address.id %}" class="text-danger ms-3" 
-                                   onclick="return confirm('Are you sure you want to delete this address?')">Remove</a>
+                                <a href="{% url 'user:delete_address' address.id %}" 
+                                    class="text-danger ms-3 delete-address-link" 
+                                    data-url="{% url 'user:delete_address' address.id %}">
+                                    Remove
+                                    </a>
+
                                 {% endif %}
                             </div>
                         </div>
@@ -175,5 +179,38 @@
         </div>
     </div>
 </div>
+<script src="https://cdn.jsdelivr.net/npm/sweetalert2@11"></script>
+
+<script>
+    document.addEventListener('DOMContentLoaded', function() {
+    // Add event listeners to all delete links
+    document.querySelectorAll('.delete-address-link').forEach(link => {
+        link.addEventListener('click', function(event) {
+            event.preventDefault(); // Prevent the default link behavior
+
+            const url = this.getAttribute('data-url'); // Get the delete URL
+
+            // Trigger SweetAlert confirmation
+            Swal.fire({
+                title: 'Are you sure?',
+                text: 'You will not be able to recover this address!',
+                icon: 'warning',
+                showCancelButton: true,
+                confirmButtonColor: '#3085d6',
+                cancelButtonColor: '#d33',
+                confirmButtonText: 'Yes, delete it!'
+            }).then((result) => {
+                if (result.isConfirmed) {
+                    // Redirect to the delete URL if confirmed
+                    window.location.href = url;
+                }
+            });
+        });
+    });
+});
+
+
+</script>
+
 
 {% endblock %}

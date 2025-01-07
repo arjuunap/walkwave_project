@@ -1,0 +1,66 @@
+{% extends "base_user.html" %}
+{% load static %}
+
+{% block title %}Order Details{% endblock %}
+
+{% block body %}
+<div class="container py-5">
+    <h2 class="mb-4 text-center">Order Details</h2>
+    <div class="card shadow-sm">
+        <div class="card-header bg-primary text-white">
+            <h5 class="mb-0">Order ID: {{ order.order_id }}</h5>
+        </div>
+        <div class="card-body">
+            <p><strong>Order Date:</strong> {{ order.ordered_at|date:"d M Y, H:i" }}</p>
+            <p><strong>Status:</strong> 
+                <span class="badge 
+                    {% if order.status == 'Delivered' %}bg-success
+                    {% elif order.status == 'Pending' %}bg-warning
+                    {% elif order.status == 'Cancelled' %}bg-danger
+                    {% else %}bg-info{% endif %}">
+                    {{ order.status }}
+                </span>
+            </p>
+            <p><strong>Delivery to:</strong> 
+                {{ order.address.label }} - 
+                {{ order.address.address }}, 
+                {{ order.address.city }}, 
+                {{ order.address.state }} - 
+                {{ order.address.pin_code }}<br>
+                <strong>Phone:</strong> {{ order.address.phone_number }}
+            </p>
+            
+            <p><strong>Total Price:</strong> ₹{{ order.total_price }}</p>
+
+            <p><strong>Payment Method:</strong> 
+                {% if payment_method %}
+                    {{ payment_method.get_method_display }}
+                {% else %}
+                    Not specified
+                {% endif %}
+            </p>
+
+            <h6 class="mt-4">Items:</h6>
+            <ul class="list-group">
+                {% for item in order.items.all %}
+                    <li class="list-group-item d-flex justify-content-between align-items-center">
+                        <div class="d-flex align-items-center">
+                            <img src="{{ item.product.thumbnail.url }}" alt="{{ item.product.name }}" 
+                                 class="img-thumbnail" 
+                                 style="width: 60px; height: 60px; object-fit: cover; margin-right: 10px;">
+                            {{ item.product.name }}
+                        </div>
+                        <span>
+                            Qty: {{ item.quantity }} | ₹{{ item.price }} 
+                            <small class="text-danger">(Discount: ₹{{ item.discount }})</small>
+                        </span>
+                    </li>
+                {% endfor %}
+            </ul>
+        </div>
+        <div class="card-footer text-muted text-center">
+            Ordered on {{ order.ordered_at|date:"d M Y" }}
+        </div>
+    </div>
+</div>
+{% endblock %}

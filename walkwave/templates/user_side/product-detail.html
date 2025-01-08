@@ -439,7 +439,7 @@
 				</div>
 				
 				
-				<!-- Product Info Section -->
+<!-- Product Info Section -->
 <div class="col-md-6 col-lg-5 p-b-30">
     <div class="p-r-50 p-t-5 p-lr-0-lg">
         <h4 class="mtext-105 js-name-detail p-b-14 product-name">
@@ -494,6 +494,7 @@
 
             <div class="flex-w flex-r-m p-b-10">
                 <div class="size-204 flex-w flex-m respon6-next">
+                    <!-- Add to Cart Button -->
                     <button 
                         id="add-to-cart-btn" 
                         class="flex-c-m stext-101 cl0 size-101 bg1 bor1 hov-btn1 p-lr-15 trans-04 js-addcart-detail"
@@ -505,6 +506,14 @@
                         {% else %}
                             Add to Cart
                         {% endif %}
+                    </button>
+
+                    <!-- Wishlist Button -->
+                    <button 
+                        id="add-to-wishlist-btn" 
+                        class="flex-c-m stext-101 cl0 size-101 bg-danger bor1 hov-btn1 p-lr-15 trans-04 ms-3 js-addwishlist-detail"
+                        data-product-id="{{ product.id }}">
+                        <i class="fas fa-heart"></i> Add to Wishlist
                     </button>
                 </div>
             </div>  
@@ -848,6 +857,57 @@ Copyright &copy;<script>document.write(new Date().getFullYear());</script> All r
 <!--===============================================================================================-->
 	<script src="{% static 'user_side/js/main.js' %}"></script>
 	<script src="https://cdn.jsdelivr.net/npm/sweetalert2@11"></script>
+
+
+	<script>
+		document.addEventListener('DOMContentLoaded', function () {
+			// Add to Wishlist Button Click Event
+			const wishlistButton = document.getElementById('add-to-wishlist-btn');
+			wishlistButton.addEventListener('click', function () {
+				const productId = this.getAttribute('data-product-id');
+		
+				// Send AJAX request to add the product to the wishlist
+				fetch("{% url 'add_to_wishlist' %}", {
+					method: 'POST',
+					headers: {
+						'Content-Type': 'application/json',
+						'X-CSRFToken': '{{ csrf_token }}'
+					},
+					body: JSON.stringify({ product_id: productId })
+				})
+				.then(response => response.json())
+				.then(data => {
+					
+					if (data.success) {
+						// Success Message
+						console.log(data)
+						Swal.fire({
+							icon: 'success',
+							title: 'Added to Wishlist!',
+							text: data.message,
+							timer: 2000,
+							showConfirmButton: false
+						});
+					} else {
+						// Error Message
+						Swal.fire({
+							icon: 'error',
+							title: 'Error!',
+							text: data.message
+						});
+					}
+				})
+				.catch(error => {
+					console.error('Error:', error);
+					Swal.fire({
+						icon: 'error',
+						title: 'Oops!',
+						text: 'Something went wrong. Please try again later.'
+					});
+				});
+			});
+		});
+		</script>
 
 
 

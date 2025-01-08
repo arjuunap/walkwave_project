@@ -1,0 +1,86 @@
+{% extends "base_user.html" %}
+
+{% block title %}Wallet - {{ user.first_name }}{% endblock %}
+
+{% block body %}
+<div class="container py-4">
+    <!-- Breadcrumb -->
+    <nav aria-label="breadcrumb">
+        <ol class="breadcrumb">
+            <li class="breadcrumb-item"><a href="{% url 'home' %}">Home</a></li>
+            <li class="breadcrumb-item active" aria-current="page">Wallet</li>
+        </ol>
+    </nav>
+
+    <div class="row">
+        <!-- Left Sidebar -->
+        <div class="col-md-3">
+            <div class="card shadow-sm">
+                <div class="card-body">
+                    <h5 class="card-title mb-4">Hi, {{ user.username }}</h5>
+                    <div class="list-group list-group-flush">
+                        <a href="{% url 'user:user_profile' %}" class="list-group-item list-group-item-action">
+                            <i class="fas fa-user me-2"></i> My Profile
+                        </a>
+                        <a href="{% url 'user_orders' %}" class="list-group-item list-group-item-action">
+                            <i class="fas fa-box me-2"></i> My Orders
+                        </a>
+                        <a href="{% url 'view_wallet' %}" class="list-group-item list-group-item-action">
+                            <i class="fas fa-wallet me-2"></i> Wallet
+                        </a>
+                        <a href="{% url 'cart_page' %}" class="list-group-item list-group-item-action">
+                            <i class="fas fa-shopping-cart me-2"></i> Cart
+                        </a>
+                        <a href="{% url 'wishlist' %}" class="list-group-item list-group-item-action">
+                            <i class="fas fa-heart me-2"></i> Wishlist
+                        </a>
+                        <a href="{% url 'user:user_address' %}" class="list-group-item list-group-item-action">
+                            <i class="fas fa-map-marker-alt me-2"></i> Manage Address
+                        </a>
+                        <a href="{% url 'logout' %}" class="list-group-item list-group-item-action text-danger">
+                            <i class="fas fa-sign-out-alt me-2"></i> Log out
+                        </a>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- Main Content -->
+        <div class="col-md-9">
+            <h4 class="mb-4">My Wallet</h4>
+            <div class="card mb-4">
+                <div class="card-body">
+                    <h5 class="card-title">Current Balance</h5>
+                    <p class="card-text display-4">₹{{ wallet.balance|floatformat:2 }}</p>
+                </div>
+            </div>
+
+            <h5 class="mb-4">Transaction History</h5>
+            {% if transactions %}
+                <table class="table table-bordered">
+                    <thead>
+                        <tr>
+                            <th>Date</th>
+                            <th>Type</th>
+                            <th>Amount</th>
+                            <th>Status</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        {% for transaction in transactions %}
+                        <tr>
+                            <td>{{ transaction.created_at|date:"d M Y, h:i A" }}</td>
+                            <td>{{ transaction.get_transaction_type_display }}</td>
+                            <td>₹{{ transaction.amount|floatformat:2 }}</td>
+                            <td>{{ transaction.get_status_display }}</td>
+                        </tr>
+                        {% endfor %}
+                    </tbody>
+                </table>
+            {% else %}
+                <p class="text-muted">No transactions yet.</p>
+            {% endif %}
+        </div>
+    </div>
+</div>
+{% endblock %}

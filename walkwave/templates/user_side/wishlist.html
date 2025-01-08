@@ -1,0 +1,167 @@
+{% extends "base_user.html" %}
+
+{% block title %}Wishlist - {{ user.first_name }}{% endblock %}
+
+{% block style %}
+<style>
+    .list-group-item {
+        border: none;
+        padding: 0.75rem 1rem;
+        color: #333;
+        transition: all 0.2s;
+    }
+    .list-group-item:hover {
+        background-color: #f8f9fa;
+        color: #000;
+    }
+    .list-group-item.active {
+        background-color: #f8f9fa;
+        color: #000;
+        border-color: transparent;
+        font-weight: 600;
+    }
+    .list-group-item.active:hover {
+        background-color: #f0f1f2;
+    }
+    .card {
+        border-radius: 0.5rem;
+        border: 1px solid rgba(0, 0, 0, 0.1);
+        margin-bottom: 1rem;
+    }
+    .breadcrumb {
+        background: transparent;
+        padding: 0;
+        margin-bottom: 1.5rem;
+    }
+    .breadcrumb-item a {
+        color: #6c757d;
+        text-decoration: none;
+    }
+    .breadcrumb-item.active {
+        color: #333;
+    }
+    .breadcrumb-item + .breadcrumb-item::before {
+        content: ">";
+    }
+    .wishlist-actions {
+        margin-top: 1rem;
+        padding-top: 1rem;
+        border-top: 1px solid #dee2e6;
+    }
+    .wishlist-actions a {
+        color: #0d6efd;
+        text-decoration: none;
+        margin-right: 1rem;
+    }
+    .wishlist-actions a:hover {
+        text-decoration: underline;
+    }
+    .product-thumbnail {
+        max-height: 150px;
+        object-fit: cover;
+        border-radius: 0.5rem;
+    }
+</style>
+{% endblock %}
+
+{% block body %}
+<div class="container py-4">
+    <!-- Breadcrumb -->
+    <nav aria-label="breadcrumb">
+        <ol class="breadcrumb">
+            <li class="breadcrumb-item"><a href="{% url 'home' %}">Home</a></li>
+            <li class="breadcrumb-item active">Wishlist</li>
+        </ol>
+    </nav>
+
+    <div class="row">
+        <!-- Left Sidebar -->
+        <div class="col-md-3">
+            <div class="card shadow-sm">
+                <div class="card-body">
+                    <h5 class="card-title mb-4">Hi, {{ user.first_name }}</h5>
+                    <div class="list-group list-group-flush">
+                        <a href="{% url 'user:user_profile' %}" class="list-group-item list-group-item-action">
+                            <i class="fas fa-user me-2"></i> My Profile
+                        </a>
+                        <a href="{% url 'user_orders' %}" class="list-group-item list-group-item-action">
+                            <i class="fas fa-box me-2"></i> My Orders
+                        </a>
+                        <a href="" class="list-group-item list-group-item-action">
+                            <i class="fas fa-wallet me-2"></i> Wallet
+                        </a>
+                        <a href="{% url 'cart_page' %}" class="list-group-item list-group-item-action">
+                            <i class="fas fa-shopping-cart me-2"></i> Cart
+                        </a>
+                        <a href="{% url 'wishlist' %}" class="list-group-item list-group-item-action active">
+                            <i class="fas fa-heart me-2"></i> Wishlist
+                        </a>
+                        <a href="{% url 'user:user_address' %}" class="list-group-item list-group-item-action">
+                            <i class="fas fa-map-marker-alt me-2"></i> Manage Address
+                        </a>
+                        <a href="{% url 'logout' %}" class="list-group-item list-group-item-action text-danger">
+                            <i class="fas fa-sign-out-alt me-2"></i> Log out
+                        </a>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- Main Content -->
+        <div class="col-md-9">
+            <h4 class="mb-4">My Wishlist</h4>
+            <div class="row">
+                {% if wishlist_items %}
+                    {% for item in wishlist_items %}
+                    <div class="col-md-6 mb-4">
+                        <div class="card">
+                            <img src="{{ item.product.thumbnail.url }}" alt="{{ item.product.name }}" class="card-img-top product-thumbnail">
+                            <div class="card-body">
+                                <h5 class="card-title">{{ item.product.name }}</h5>
+                                <p class="card-text">
+                                    Price: ₹{{ item.product.price|floatformat:2 }}<br>
+                                    {% if item.product.offer_price %}
+                                    Offer Price: ₹{{ item.product.offer_price|floatformat:2 }}
+                                    {% endif %}
+                                </p>
+                                <div class="wishlist-actions">
+                                    <a href="{% url 'product:product_detail' item.product.id %}" class="text-primary">View Product</a>
+                                    <a href="{% url 'remove_from_wishlist' item.id %}" class="text-danger remove-wishlist-link" data-url="{% url 'remove_from_wishlist' item.id %}">Remove</a>
+
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                    {% endfor %}
+                {% else %}
+                    <p class="text-muted">Your wishlist is empty. <a href="{% url 'home' %}">Start shopping!</a></p>
+                {% endif %}
+            </div>
+        </div>
+    </div>
+</div>
+<script src="https://cdn.jsdelivr.net/npm/sweetalert2@11"></script>
+<script>
+    document.addEventListener('DOMContentLoaded', function() {
+        document.querySelectorAll('.remove-wishlist-link').forEach(link => {
+            link.addEventListener('click', function(event) {
+                event.preventDefault(); 
+                const url = this.getAttribute('data-url');
+                Swal.fire({
+                    title: 'Are you sure?',
+                    text: 'You will remove this product from your wishlist.',
+                    icon: 'warning',
+                    showCancelButton: true,
+                    confirmButtonColor: '#3085d6',
+                    cancelButtonColor: '#d33',
+                    confirmButtonText: 'Yes, remove it!'
+                }).then((result) => {
+                    if (result.isConfirmed) {
+                        window.location.href = url;
+                    }
+                });
+            });
+        });
+    });
+</script>
+{% endblock %}

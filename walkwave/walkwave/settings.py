@@ -187,7 +187,6 @@ ACCOUNT_USERNAME_REQUIRED = False
 
 
 
-# settings.py
 
 SOCIALACCOUNT_PROVIDERS = {
     'google': {
@@ -205,3 +204,6 @@ SOCIALACCOUNT_PROVIDERS = {
         }
     }
 }
+
+RAZORPAY_KEY_ID = "rzp_test_rVEX3RULKjtSZg"
+RAZORPAY_KEY_SECRET = "7GgPeoKyYbpwmQCvJG0YCrwO"

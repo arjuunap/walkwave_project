@@ -33,11 +33,7 @@
             <p><strong>Total Price:</strong> ₹{{ order.total_price }}</p>
 
             <p><strong>Payment Method:</strong> 
-                {% if payment_method %}
-                    {{ payment_method.get_method_display }}
-                {% else %}
-                    Not specified
-                {% endif %}
+                {{ order.payment_method|default:"Not specified" }}
             </p>
 
             <h6 class="mt-4">Items:</h6>
@@ -64,3 +60,4 @@
     </div>
 </div>
 {% endblock %}
+

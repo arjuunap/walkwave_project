@@ -1,0 +1,70 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Payment Page</title>
+    <script src="https://checkout.razorpay.com/v1/checkout.js"></script>
+</head>
+<body>
+    <h1>Complete Your Payment</h1>
+    <p>Total Amount: ₹{{ total_amount }}</p>
+
+    <!-- Razorpay Checkout Form -->
+    <form action="{% url 'razorpay_payment_success' %}" method="POST">
+        <script
+            src="https://checkout.razorpay.com/v1/checkout.js"
+            data-key="{{ razorpay_key }}"
+            data-amount="{{ total_amount }}"
+            data-currency="INR"
+            data-order_id="{{ razorpay_order_id }}"
+            data-name="Your Store"
+            data-description="Order Payment"
+            data-image="https://your-logo-url.com/logo.png"
+            data-prefill.name="{{ request.user.username }}"
+            data-prefill.email="{{ request.user.email }}"
+            data-prefill.contact="{{ request.user.phone_number }}"
+            data-theme.color="#3399cc">
+        </script>
+        <input type="hidden" name="razorpay_order_id" value="{{ razorpay_order_id }}">
+    </form>
+    
+    
+    <script>
+        // Razorpay payment integration
+        var options = {
+            "key": "{{ razorpay_key }}", // Razorpay Key ID from settings
+            "amount": {{ total_amount|floatformat:0 }} * 100, // Amount in paisa
+            "currency": "INR",
+            "name": "Your Business Name",
+            "description": "Order Payment",
+            "order_id": "{{ razorpay_order_id }}", // Order ID from Razorpay
+            "handler": function (response) {
+                
+                document.getElementById('razorpay_payment_id').value = response.razorpay_payment_id;
+                document.getElementById('razorpay_signature').value = response.razorpay_signature;
+
+                // Submit the form
+                document.getElementById('razorpay-form').submit();
+            },
+            "prefill": {
+                "name": "{{ request.user.username }}",  // Using the username field as the full name is not available
+                "email": "{{ request.user.email }}",
+                "contact": "{{ request.user.phone_number }}", // Directly using the phone_number field from the User model
+            },
+            "theme": {
+                "color": "#3399cc"
+            }
+
+        };
+
+        var rzp = new Razorpay(options);
+
+        
+        document.getElementById('pay-button').onclick = function (e) {
+            e.preventDefault();
+            rzp.open();
+        };
+    </script>
+</body>
+</html>

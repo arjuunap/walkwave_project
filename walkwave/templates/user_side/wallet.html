@@ -15,9 +15,9 @@
     <div class="row">
         <!-- Left Sidebar -->
         <div class="col-md-3">
-            <div class="card shadow-sm">
+            <div class="card shadow-sm border-0">
                 <div class="card-body">
-                    <h5 class="card-title mb-4">Hi, {{ user.username }}</h5>
+                    <h5 class="card-title mb-4 text-center">Hi, {{ user.username }}</h5>
                     <div class="list-group list-group-flush">
                         <a href="{% url 'user:user_profile' %}" class="list-group-item list-group-item-action">
                             <i class="fas fa-user me-2"></i> My Profile
@@ -25,7 +25,7 @@
                         <a href="{% url 'user_orders' %}" class="list-group-item list-group-item-action">
                             <i class="fas fa-box me-2"></i> My Orders
                         </a>
-                        <a href="{% url 'view_wallet' %}" class="list-group-item list-group-item-action">
+                        <a href="{% url 'view_wallet' %}" class="list-group-item list-group-item-action active">
                             <i class="fas fa-wallet me-2"></i> Wallet
                         </a>
                         <a href="{% url 'cart_page' %}" class="list-group-item list-group-item-action">
@@ -48,35 +48,51 @@
         <!-- Main Content -->
         <div class="col-md-9">
             <h4 class="mb-4">My Wallet</h4>
-            <div class="card mb-4">
-                <div class="card-body">
+            <div class="card shadow-sm border-0 mb-4">
+                <div class="card-body text-center">
                     <h5 class="card-title">Current Balance</h5>
-                    <p class="card-text display-4">₹{{ wallet.balance|floatformat:2 }}</p>
+                    <p class="card-text display-4 text-primary">₹{{ wallet.balance|floatformat:2 }}</p>
                 </div>
             </div>
 
             <h5 class="mb-4">Transaction History</h5>
             {% if transactions %}
-                <table class="table table-bordered">
-                    <thead>
-                        <tr>
-                            <th>Date</th>
-                            <th>Type</th>
-                            <th>Amount</th>
-                            <th>Status</th>
-                        </tr>
-                    </thead>
-                    <tbody>
-                        {% for transaction in transactions %}
-                        <tr>
-                            <td>{{ transaction.created_at|date:"d M Y, h:i A" }}</td>
-                            <td>{{ transaction.get_transaction_type_display }}</td>
-                            <td>₹{{ transaction.amount|floatformat:2 }}</td>
-                            <td>{{ transaction.get_status_display }}</td>
-                        </tr>
-                        {% endfor %}
-                    </tbody>
-                </table>
+                <div class="table-responsive">
+                    <table class="table table-hover table-striped align-middle shadow-sm">
+                        <thead class="table-dark">
+                            <tr>
+                                <th>Date</th>
+                                <th>Type</th>
+                                <th>Amount</th>
+                                <th>Status</th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                            {% for transaction in transactions %}
+                            <tr>
+                                <td>{{ transaction.created_at|date:"d M Y, h:i A" }}</td>
+                                <td>
+                                    <span class="badge 
+                                        {% if transaction.transaction_type == 'Cr' %}bg-success
+                                        {% else %}bg-danger{% endif %}">
+                                        {{ transaction.get_transaction_type_display }}
+                                    </span>
+                                </td>
+                                <td class="{% if transaction.transaction_type == 'Cr' %}text-success{% else %}text-danger{% endif %}">
+                                    ₹{{ transaction.amount|floatformat:2 }}
+                                </td>
+                                <td>
+                                    <span class="badge 
+                                        {% if transaction.status == 'Completed' %}bg-success
+                                        {% else %}bg-secondary{% endif %}">
+                                        {{ transaction.get_status_display }}
+                                    </span>
+                                </td>
+                            </tr>
+                            {% endfor %}
+                        </tbody>
+                    </table>
+                </div>
             {% else %}
                 <p class="text-muted">No transactions yet.</p>
             {% endif %}

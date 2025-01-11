@@ -299,68 +299,58 @@
 				
 			</div>
 
-			
+			{% comment %} filter {% endcomment %}
 			<div class="dis-none panel-filter w-full p-t-10">
 				<div class="wrap-filter flex-w bg6 w-full p-lr-40 p-t-27 p-lr-15-sm">
 					<div class="filter-col1 p-r-15 p-b-27">
-						<div class="mtext-102 cl2 p-b-15">
-							Sort By
-						</div>
-
-						<ul>
-							<li class="p-b-6">
-								<a href="#" class="filter-link stext-106 trans-04">
-									Popularity
-								</a>
-							</li>
-
-
-							<li class="p-b-6">
-								<a href="#" class="filter-link stext-106 trans-04">
-									low to high
-								</a>
-							</li>
-
-							<li class="p-b-6">
-								<a href="#" class="filter-link stext-106 trans-04 filter-link-active">
-									high to low
-								</a>
-							</li>
-
-							<li class="p-b-6">
-								<a href="#" class="filter-link stext-106 trans-04">
-									Average ratings
-								</a>
-							</li>
-
-							<li class="p-b-6">
-								<a href="#" class="filter-link stext-106 trans-04">
-									Price: Featured
-								</a>
-							</li>
-
-							<li class="p-b-6">
-								<a href="#" class="filter-link stext-106 trans-04">
-									New arrivals
-								</a>
-							</li>
-
-							<li class="p-b-6">
-								<a href="#" class="filter-link stext-106 trans-04">
-									aA - zZ 
-								</a>
-							</li>
-
-							<li class="p-b-6">
-								<a href="#" class="filter-link stext-106 trans-04">
-									zZ - aA 
-								</a>
-							</li>
-						</ul>
+						<!-- Form for Filters -->
+						<form method="get" id="filter-form">
+							<!-- Categories -->
+							<div class="categories">
+								<h4>Categories</h4>
+								{% for category in categories %}
+									<label>
+										<input type="radio" name="category" value="{{ category.id }}" 
+											   {% if selected_category == category.id %}checked{% endif %}>
+										{{ category.name }}
+									</label>
+								{% endfor %}
+							</div>
+			
+							<!-- Filters -->
+							<div class="filters">
+								<h4>Sort By</h4>
+								<label>
+									<input type="checkbox" name="filter" value="low-to-high" 
+										   {% if 'low-to-high' in selected_filters %}checked{% endif %}>
+									Price: Low to High
+								</label>
+								<label>
+									<input type="checkbox" name="filter" value="high-to-low" 
+										   {% if 'high-to-low' in selected_filters %}checked{% endif %}>
+									Price: High to Low
+								</label>
+								<label>
+									<input type="checkbox" name="filter" value="new-arrivals" 
+										   {% if 'new-arrivals' in selected_filters %}checked{% endif %}>
+									New Arrivals
+								</label>
+								<label>
+									<input type="checkbox" name="filter" value="a-to-z" 
+										   {% if 'a-to-z' in selected_filters %}checked{% endif %}>
+									A - Z
+								</label>
+								<label>
+									<input type="checkbox" name="filter" value="z-to-a" 
+										   {% if 'z-to-a' in selected_filters %}checked{% endif %}>
+									Z - A
+								</label>
+							</div>
+			
+							<!-- Submit Button -->
+							<button type="submit">Apply Filters</button>
+						</form>
 					</div>
-
-					
-					
 				</div>
 			</div>
 			
@@ -777,6 +767,20 @@ Copyright &copy;<script>document.write(new Date().getFullYear());</script> All r
 	<script src="{% static 'user_side/vendor/isotope/isotope.pkgd.min.js' %}"></script>
 <!--===============================================================================================-->
 	<script src="{% static 'user_side/vendor/sweetalert/sweetalert.min.js' %}"></script>
+
+	<script>
+        // Auto-submit the form on checkbox change
+        document.addEventListener('DOMContentLoaded', () => {
+            const filterForm = document.getElementById('filter-form');
+            const checkboxes = filterForm.querySelectorAll('input[type="checkbox"]');
+
+            checkboxes.forEach((checkbox) => {
+                checkbox.addEventListener('change', () => {
+                    filterForm.submit();
+                });
+            });
+        });
+    </script>
 	<script>
 		$('.js-addwish-b2, .js-addwish-detail').on('click', function(e){
 			e.preventDefault();

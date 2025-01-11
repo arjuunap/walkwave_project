@@ -1,7 +1,7 @@
 from django.shortcuts import render,redirect
 from django.contrib import messages
 from user.models import Address
-
+from django.core.paginator import Paginator, EmptyPage, PageNotAnInteger
 from django.http import JsonResponse
 from django.views.decorators.http import require_POST
 from django.contrib.auth.decorators import login_required
@@ -205,12 +205,15 @@ import razorpay
 from django.conf import settings
 from django.http import JsonResponse
 from order.razorpay_client import client  # Import the Razorpay client
+from coupon.models import Coupon,UserCoupon
+from django.utils import timezone
+
 
 
 @login_required
 def checkout_page(request):
     addresses = Address.objects.filter(user=request.user)
-    cart = Cart.objects.filter(user=request.user).first()
+    cart = Cart.objects.filter(user=request.user).first() 
 
     if not cart or not cart.items.exists():
         messages.error(request, "Your cart is empty. Please add items to proceed to checkout.")
@@ -235,8 +238,21 @@ def checkout_page(request):
             return redirect('checkout_page')
 
         address = get_object_or_404(Address, id=address_id, user=request.user)
-        total_price = cart.calculate_total_price()  
+       
+        total_price = cart.calculate_total_price() 
+        coupon = request.session.get('applied_coupon')
+        if coupon:
+            coupon =Coupon.objects.get(id=coupon)
+            discount_amount = coupon.discount
+            total_price-=discount_amount
+        print(total_price)
         amount_in_paisa = int(total_price * 100)  # Convert to paisa
+  
+
+
+
+
+
 
         if payment_method == "Online":
             notes = {
@@ -253,6 +269,14 @@ def checkout_page(request):
                 })
 
                 razorpay_order_id = razorpay_order["id"]
+
+                user_coupon = UserCoupon(user=request.user,
+                                         coupon = coupon                          
+                                         )
+                
+                user_coupon.save()
+                coupon.count-=1
+                coupon.save()
 
                 order = Order(
                     user=request.user,
@@ -281,7 +305,7 @@ def checkout_page(request):
                 return render(request, "user_side/payment_page.html", {
                     "razorpay_order_id": razorpay_order_id,
                     "razorpay_key": settings.RAZORPAY_KEY_ID,
-                    "total_amount": int(total_price * 100), 
+                    "total_amount_in_rupees": total_price, 
                     "order_id": order.id,
                 })
 
@@ -290,6 +314,12 @@ def checkout_page(request):
                 return redirect('checkout_page')
 
         elif payment_method == "COD":
+            user_coupon = UserCoupon(user=request.user,
+                                         coupon = coupon                          
+                                         )
+            user_coupon.save()
+            coupon.count-=1
+            coupon.save()
             order = Order.objects.create(
                 user=request.user,
                 address=address,
@@ -316,6 +346,12 @@ def checkout_page(request):
             return redirect('order_confirmed', id=order.id)
 
         elif payment_method == "Wallet":
+            user_coupon = UserCoupon(user=request.user,
+                                         coupon = coupon                          
+                                         )
+            user_coupon.save()
+            coupon.count-=1
+            coupon.save()
             wallet = Wallet.objects.filter(user=request.user).first()
             if not wallet or wallet.balance < total_price:
                 messages.error(request, "Insufficient wallet balance. Please choose another payment method.")
@@ -359,6 +395,8 @@ def checkout_page(request):
 
     total_amount = cart.calculate_total_price()
     total_discount = sum(item.discount for item in cart.items.all())
+    available_coupons = Coupon.objects.filter(active=True, expiry_date__gte=timezone.now())
+
 
     return render(request, "user_side/checkout.html", {
         "addresses": addresses,
@@ -366,6 +404,7 @@ def checkout_page(request):
         "payment_methods": payment_methods,
         "total_amount": total_amount,
         "total_discount": total_discount,
+        "available_coupons": available_coupons
     })
 
 
@@ -412,10 +451,23 @@ def order_confirmed(request, id):
 
 
 def user_orders(request):
-    orders = Order.objects.filter(user=request.user).prefetch_related('items__product', 'address')
-    return render(request, 'user_side/user_orders.html', {
-        'orders': orders,
-    })
+    orders_list = Order.objects.filter(user=request.user).prefetch_related('items__product', 'address').order_by('-ordered_at')
+    
+    per_page = 4
+    paginator = Paginator(orders_list, per_page)
+    
+    page = request.GET.get('page')
+    try:
+        orders = paginator.page(page)
+    except PageNotAnInteger:
+        orders = paginator.page(1)
+    except EmptyPage:
+        orders = paginator.page(paginator.num_pages)
+    
+    return render(request, 'user_side/user_orders.html', {'orders': orders})
+
+
+
 
 from decimal import Decimal
 

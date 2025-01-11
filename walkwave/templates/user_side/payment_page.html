@@ -8,14 +8,14 @@
 </head>
 <body>
     <h1>Complete Your Payment</h1>
-    <p>Total Amount: ₹{{ total_amount }}</p>
+    <p>Total Amount: ₹{{ total_amount_in_rupees|floatformat:2 }}</p>
 
     <!-- Razorpay Checkout Form -->
     <form action="{% url 'razorpay_payment_success' %}" method="POST">
-        <script
+        <script0
             src="https://checkout.razorpay.com/v1/checkout.js"
             data-key="{{ razorpay_key }}"
-            data-amount="{{ total_amount }}"
+            data-amount="{{ total_amount_in_paisa }}"
             data-currency="INR"
             data-order_id="{{ razorpay_order_id }}"
             data-name="Your Store"

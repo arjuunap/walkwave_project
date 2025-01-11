@@ -448,11 +448,41 @@ def edit_product(request, id):
 
 @cache_control(no_cache=True, no_store=True, must_revalidate=True)
 def product_shop(request):
+    # Fetch all products that are not deleted
     products = Product.objects.filter(is_delete=False)
-    return render(request, 'user_side/shop.html',{'products':products})
 
+    # Fetch all categories
+    categories = Category.objects.all()
 
+    # Get selected category from query parameters
+    selected_category = request.GET.get('category')
 
+    # Filter products by selected category
+    if selected_category:
+        products = products.filter(id=selected_category)
+
+    # Get selected filters from query parameters
+    filters = request.GET.getlist('filter')
+
+    # Apply sorting filters
+    if "low-to-high" in filters:
+        products = products.order_by('price')
+    if "high-to-low" in filters:
+        products = products.order_by('-price')
+    if "new-arrivals" in filters:
+        products = products.order_by('-created_at')
+    if "a-to-z" in filters:
+        products = products.order_by('name')
+    if "z-to-a" in filters:
+        products = products.order_by('-name')
+
+    # Pass the data to the template
+    return render(request, 'user_side/shop.html', {
+        'products': products,
+        'categories': categories,
+        'selected_filters': filters,
+        'selected_category': selected_category,
+    })
 
 #user side
 @cache_control(no_cache=True, no_store=True, must_revalidate=True)

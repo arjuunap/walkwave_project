@@ -294,7 +294,6 @@
                 </div>
             </div>
 
-            <!-- Price Details Sidebar -->
             <div class="sidebar">
                 <div class="checkout-section">
                     <div class="section-header">
@@ -303,28 +302,28 @@
                     <div class="price-details">
                         <div class="price-row">
                             <span>Price ({{ cart.items.count }} items)</span>
-                            <span>₹ {{ cart.calculate_total_price|floatformat:2 }}</span>
+                            <span id="total_price">₹ {{ cart.calculate_total_price|floatformat:2 }}</span>
                         </div>
                         <div class="price-row">
                             <span>Saved</span>
-                            <span>₹ {{ total_discount|floatformat:2 }}</span>
+                            <span id="saved_amount">₹ {{ total_discount|floatformat:2 }}</span>
                         </div>
                         <div class="price-row">
                             <span>Coupon Applied</span>
-                            <span>₹ {% if discount_amount > 0 %}{{ discount_amount|floatformat:2 }}{% else %}0{% endif %}</span>
+                            <span id="coupon_applied">₹ {% if discount_amount > 0 %}{{ discount_amount|floatformat:2 }}{% else %}0{% endif %}</span>
                         </div>
-                        <div class="price-row">
-                            <span>Delivery Charges</span>
-                            <span>{% if cart.total_price > 4999 %}<span class="text-success">FREE</span>{% else %}₹ {{ cart.delivery_charge }}{% endif %}</span>
-                        </div>
+                       
                         <div class="price-row price-total">
                             <span>Total Amount</span>
-                            <span>₹ {{ total_amount|floatformat:2 }}</span>
+                            <span id="after_discount">₹ {{ total_amount|floatformat:2 }}</span>
                         </div>
                     </div>
+                    <button id="applyCouponBtn" type="button" class="btn btn-primary" data-bs-toggle="modal" data-bs-target="#couponModal">Apply Coupon</button>
                     <button id="submitBtn" type="submit" class="btn-place-order">Place Order</button>
                 </div>
             </div>
+            
+            
         </div>
     </form>
 
@@ -391,18 +390,113 @@
             </div>
         </div>
     </div>
+
+   {% comment %} coupon modal {% endcomment %}
+    <div class="modal fade" id="couponModal" tabindex="-1" aria-labelledby="couponModalLabel" aria-hidden="true">
+        <div class="modal-dialog">
+            <div class="modal-content">
+                <div class="modal-header">
+                    <h5 class="modal-title" id="couponModalLabel">Available Coupons</h5>
+                    <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+                </div>
+                <div class="modal-body">
+                    <ul class="list-group">
+                        {% for coupon in available_coupons %}
+                        <li class="list-group-item d-flex justify-content-between align-items-center">
+                            <div>
+                                <strong>{{ coupon.name }}</strong>
+                                <p class="mb-0">Discount: {{ coupon.discount }}</p>
+                                <p class="mb-0">Min Price: ₹ {{ coupon.minimum_price }}</p>
+                                <p class="mb-0">Expiry: {{ coupon.expiry_date }}</p>
+                            </div>
+                            <button class="btn btn-success apply-coupon-btn" data-coupon-id="{{ coupon.id }}" data-coupon-name="{{ coupon.name }}">Apply</button>
+                        </li>
+                        {% endfor %}
+                    </ul>
+                </div>
+            </div>
+        </div>
+    </div>
+    
+    
     
 </div>
+<script src="https://cdn.jsdelivr.net/npm/sweetalert2@11"></script>
 
 <script>
-
-
+     
+    document.addEventListener('DOMContentLoaded', function () {
+        const couponButtons = document.querySelectorAll('.apply-coupon-btn');
+    
+        couponButtons.forEach(button => {
+            button.addEventListener('click', function () {
+                const couponId = this.dataset.couponId;
+                const couponName = this.dataset.couponName;
+    
+                fetch('/coupon/apply-coupon/', {
+                    method: 'POST',
+                    headers: {
+                        'Content-Type': 'application/json',
+                        'X-CSRFToken': '{{ csrf_token }}'
+                    },
+                    body: JSON.stringify({ coupon_id: couponId })
+                })
+                .then(response => {
+                    // Check if the response is ok (status 200-299)
+                    if (!response.ok) {
+                        throw new Error(`HTTP error! Status: ${response.status}`);
+                    }
+                    return response.json();
+                })
+                .then(data => {
+                    if (data.success) {
+                        // Show success message
+                        Swal.fire({
+                            title: 'Coupon Applied!',
+                            text: `Coupon "${couponName}" has been successfully applied.`,
+                            icon: 'success',
+                        });
+    
+                        // Update price details dynamically
+                        document.querySelector('#total_price').textContent = `₹ ${data.total_price.toFixed(2)}`;
+                        document.querySelector('#after_discount').textContent = `₹ ${data.after_discount.toFixed(2)}`;
+                        document.querySelector('#saved_amount').textContent = `₹ ${data.discount_amount.toFixed(2)}`;
+                        document.querySelector('#coupon_applied').textContent = `₹ ${data.discount_amount.toFixed(2)}`;
+    
+                        // Disable the "Apply Coupon" button after applying the coupon
+                        document.querySelector('#applyCouponBtn').disabled = true;
+    
+                        // Close the coupon modal
+                        const couponModal = bootstrap.Modal.getInstance(document.getElementById('couponModal'));
+                        couponModal.hide();
+                    } else {
+                        // Show error message from the backend
+                        Swal.fire({
+                            title: 'Error',
+                            text: data.message,
+                            icon: 'error',
+                        });
+                    }
+                })
+                .catch(error => {
+                    // Handle network or unexpected errors
+                    console.error('Error applying coupon:', error);
+                    Swal.fire({
+                        title: 'Error',
+                        text: 'An error occurred while applying the coupon. Please try again.',
+                        icon: 'error',
+                    });
+                });
+            });
+        });
+    });
+    
     document.getElementById('addressForm').addEventListener('submit', function(e) {
         e.preventDefault();
-        
+    
         // Reset previous error states
         clearErrors();
-        
+    
         // Submit form using fetch
         fetch(this.action, {
             method: 'POST',
@@ -417,7 +511,7 @@
                 // Hide modal
                 const modal = bootstrap.Modal.getInstance(document.getElementById('addressModal'));
                 modal.hide();
-                
+    
                 // Show success message and redirect
                 window.location.href = data.redirect_url;
             } else {
@@ -434,7 +528,7 @@
     function clearErrors() {
         // Hide general error message
         document.getElementById('generalError').classList.add('d-none');
-        
+    
         // Remove all error classes and messages
         const inputs = document.querySelectorAll('.form-control');
         inputs.forEach(input => {
@@ -463,6 +557,7 @@
             }
         }
     }
+    
 
 
 function editAddress(id, label, address, city, state, pinCode, phoneNumber, defaultAddress) {

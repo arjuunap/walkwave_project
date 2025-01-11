@@ -217,6 +217,7 @@ def login_view(request):
             messages.error(request, "Please type email and password")
             return redirect('login')
         user = authenticate(request, email=email, password=password)
+        print(user)
 
         if user is not None:
             if user.is_active:

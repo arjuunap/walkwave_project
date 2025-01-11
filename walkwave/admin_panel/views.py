@@ -5,6 +5,7 @@ from account_app.models import User
 from django.views.decorators.cache import cache_control
 from django.contrib.auth.decorators import login_required
 from utils.decorators import admin_required
+from django.core.paginator import Paginator, EmptyPage, PageNotAnInteger
 
 # Create your views here.
 
@@ -53,8 +54,23 @@ def admin_logout(request):
 @cache_control(no_cache=True, no_store=True, must_revalidate=True)
 @login_required
 def user_listing(request):
-    users= User.objects.all().order_by('id')
-    return render(request,'admin_side/user_listing.html',{'users':users})
+    users_list = User.objects.filter(is_staff=False).order_by('id')
+    
+    # Number of users per page
+    per_page = 10
+    paginator = Paginator(users_list, per_page)
+    
+    page = request.GET.get('page')
+    try:
+        users = paginator.page(page)
+    except PageNotAnInteger:
+        # If page is not an integer, deliver first page.
+        users = paginator.page(1)
+    except EmptyPage:
+        # If page is out of range, deliver last page of results.
+        users = paginator.page(paginator.num_pages)
+    
+    return render(request, 'admin_side/user_listing.html', {'users': users})
 
 
 
@@ -64,6 +80,6 @@ def user_listing(request):
 def user_status(request,user_id):
     if request.method == 'POST':          
         user=User.objects.get(id=user_id)
-        user.is_blocked= not user.is_blocked
+        user.is_active= not user.is_active
         user.save()
     return redirect('user_listing')

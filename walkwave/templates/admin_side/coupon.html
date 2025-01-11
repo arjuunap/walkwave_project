@@ -1,0 +1,162 @@
+{% extends "base.html" %}
+
+{% block title %}
+Coupon Management - WalkWave
+{% endblock %}
+
+{% block content %}
+{% load static %}
+<link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/sweetalert2@11/dist/sweetalert2.min.css">
+<script src="https://cdn.jsdelivr.net/npm/sweetalert2@11/dist/sweetalert2.all.min.js"></script>
+
+<style>
+    .coupon-table {
+        width: 100%;
+        border-collapse: separate;
+        border-spacing: 0 15px;
+    }
+    .coupon-table th {
+        background-color: #f8f9fa;
+        padding: 12px;
+        text-align: left;
+        font-weight: 600;
+        color: #495057;
+    }
+    .coupon-table td {
+        background-color: #ffffff;
+        padding: 12px;
+        vertical-align: middle;
+    }
+    .coupon-table tr {
+        box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
+        transition: all 0.3s ease;
+    }
+    .coupon-table tr:hover {
+        transform: translateY(-3px);
+        box-shadow: 0 4px 8px rgba(0, 0, 0, 0.15);
+    }
+    .status-badge {
+        padding: 6px 12px;
+        border-radius: 20px;
+        font-weight: 500;
+    }
+    .status-active {
+        background-color: #d4edda;
+        color: #155724;
+    }
+    .status-inactive {
+        background-color: #f8d7da;
+        color: #721c24;
+    }
+    .action-btn {
+        padding: 6px 12px;
+        border: none;
+        border-radius: 4px;
+        cursor: pointer;
+        transition: background-color 0.3s ease;
+        margin-right: 5px;
+        text-decoration: none;
+    }
+    .btn-view {
+        background-color: #007bff;
+        color: white;
+    }
+    .btn-delete {
+        background-color: #dc3545;
+        color: white;
+    }
+</style>
+
+<div class="container mt-4">
+    <div class="d-flex justify-content-between align-items-center mb-4">
+        <h1>Coupon Management</h1>
+        <a href="{% url 'add_coupon' %}" class="btn btn-primary">Add Coupon</a>
+    </div>
+
+    {% if messages %}
+    {% for message in messages %}
+        <div class="success-message">{{ message }}</div>
+    {% endfor %}
+    {% endif %}
+
+    <div class="table-responsive">
+        <table class="coupon-table">
+            <thead>
+                <tr>
+                    <th>ID</th>
+                    <th>Name</th>
+                    <th>Discount</th>
+                    <th>Minimum Price</th>
+                    <th>Expiry Date</th>
+                    <th>Count</th>
+                    
+                    <th>Status</th>
+                    <th>Actions</th>
+                </tr>
+            </thead>
+            <tbody>
+                {% for coupon in coupons %}
+                <tr>
+                    <td data-label="ID">{{ coupon.id }}</td>
+                    <td data-label="Name">{{ coupon.name }}</td>
+                    <td data-label="Discount">{{ coupon.discount }}</td>
+                    <td data-label="Minimum Price">₹{{ coupon.minimum_price }}</td>
+                    <td data-label="Expiry Date">{{ coupon.expiry_date }}</td>
+                    <td data-label="Count">{{ coupon.count }}</td>
+                    <td data-label="Status">
+                        <span class="status-badge {% if coupon.active %}status-active{% else %}status-inactive{% endif %}">
+                            {% if coupon.active %}Active{% else %}Inactive{% endif %}
+                        </span>
+                    </td>
+                    <td data-label="Actions">
+                        
+                        <button class="action-btn btn-delete" onclick="deleteCoupon({{ coupon.id }})">Delete</button>
+                    </td>
+                </tr>
+                {% endfor %}
+            </tbody>
+        </table>
+    </div>
+</div>
+
+<script>
+    function deleteCoupon(couponId) {
+        Swal.fire({
+            title: 'Are you sure?',
+            text: "You won't be able to revert this!",
+            icon: 'warning',
+            showCancelButton: true,
+            confirmButtonColor: '#3085d6',
+            cancelButtonColor: '#d33',
+            confirmButtonText: 'Yes, delete it!'
+        }).then((result) => {
+            if (result.isConfirmed) {
+                // Send DELETE request to server
+                fetch(`/coupon/admin/coupon/delete/${couponId}/`, {
+                    method: 'POST',
+                    headers: {
+                        'X-CSRFToken': '{{ csrf_token }}'
+                    }
+                })
+                .then(response => {
+                    if (response.ok) {
+                        Swal.fire(
+                            'Deleted!',
+                            'Coupon has been deleted.',
+                            'success'
+                        ).then(() => {
+                            location.reload(); // Refresh the page
+                        });
+                    } else {
+                        Swal.fire(
+                            'Error!',
+                            'An error occurred while deleting the coupon.',
+                            'error'
+                        );
+                    }
+                });
+            }
+        });
+    }
+</script>
+{% endblock %}

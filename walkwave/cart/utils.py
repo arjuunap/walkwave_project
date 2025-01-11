@@ -18,4 +18,4 @@ def verify_razorpay_signature(data):
     generated_signature = hmac.new(secret.encode('utf-8'), msg, hashlib.sha256).hexdigest()
 
     if generated_signature != razorpay_signature:
-        raise ValueError("Invalid Razorpay signature.")
+        raise ValueError("Invalid Razorpay signature.")        

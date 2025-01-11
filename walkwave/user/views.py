@@ -299,6 +299,7 @@ def forgot_password(request):
                         settings.DEFAULT_FROM_EMAIL, 
                         [email], 
                     )
+            print(otp)
             request.session['user_data'] = {
                 'user_id':user.id,
                 'email': user.email,

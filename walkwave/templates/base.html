@@ -107,7 +107,7 @@
                             </a>
                         </li>
                         <li class="nav-item">
-                            <a class="nav-link {% if request.resolver_match.url_name == 'coupons' %}active{% endif %}" href="#">
+                            <a class="nav-link {% if request.resolver_match.url_name == 'coupon_management' %}active{% endif %}" href="{% url 'coupon_management' %}">
                                 <i class="fas fa-tag"></i> Coupon Management
                             </a>
                         </li>
